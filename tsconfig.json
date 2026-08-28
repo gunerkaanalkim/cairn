@@ -3,6 +3,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "cairn-datatable": ["./dist/cairn-datatable"]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -21,5 +24,19 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/cairn-datatable/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/cairn-datatable/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/cairn-demo/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/cairn-demo/tsconfig.spec.json"
+    }
+  ]
 }

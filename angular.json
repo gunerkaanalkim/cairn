@@ -6,5 +6,92 @@
   },
   "newProjectRoot": "projects",
   "projects": {
+    "cairn-datatable": {
+      "projectType": "library",
+      "root": "projects/cairn-datatable",
+      "sourceRoot": "projects/cairn-datatable/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/cairn-datatable/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/cairn-datatable/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/cairn-datatable/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "cairn-demo": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/cairn-demo",
+      "sourceRoot": "projects/cairn-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/cairn-demo/src/main.ts",
+            "tsConfig": "projects/cairn-demo/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/cairn-demo/public"
+              }
+            ],
+            "styles": ["projects/cairn-demo/src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "cairn-demo:build:production"
+            },
+            "development": {
+              "buildTarget": "cairn-demo:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    }
   }
 }
