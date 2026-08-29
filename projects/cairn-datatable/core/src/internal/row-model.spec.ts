@@ -8,5 +8,6 @@ describe('row-model', () => {
     expect(rows[0].sourceIndex).toBe(0);
     expect(rows[0].selected).toBe(false);
     expect(rows[0].data).toBe(data[0]);
+    expect(data).toEqual([{ id: 1, name: 'A' }]);
   });
 });

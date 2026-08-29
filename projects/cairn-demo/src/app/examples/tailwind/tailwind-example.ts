@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { createTable } from '@guneralkim/cairn-datatable/core';
-import { DataTable, CairnClassNames } from '@guneralkim/cairn-datatable';
+import { createTable } from '@gunerkaanalkim/cairn-datatable/core';
+import { DataTable, CairnClassNames } from '@gunerkaanalkim/cairn-datatable';
 import { DATA, COLUMNS } from '../../shared/sample-data';
 import { ExampleShell } from '../../shared/example-shell';
 
@@ -8,11 +8,7 @@ import { ExampleShell } from '../../shared/example-shell';
   selector: 'app-tailwind-example',
   standalone: true,
   imports: [DataTable, ExampleShell],
-  template: `
-    <app-example-shell title="Tailwind Example">
-      <cairn-data-table [table]="tableApi" [classNames]="classes" />
-    </app-example-shell>
-  `
+  templateUrl: './tailwind-example.html'
 })
 export class TailwindExample {
   data = signal(DATA);

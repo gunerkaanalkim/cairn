@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, contentChildren, contentChild, TemplateRef } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
-import type { TableApi, ColumnDef, Row } from '@guneralkim/cairn-datatable/core';
+import { NgTemplateOutlet, NgClass } from '@angular/common';
+import type { TableApi, ColumnDef, Row } from '@gunerkaanalkim/cairn-datatable/core';
+import { DEFAULT_EMPTY_MESSAGE } from '@gunerkaanalkim/cairn-datatable/core';
 import { CairnCell, CellContext } from './directives/cell-template';
 import { CairnHeader } from './directives/header-template';
 import { CairnEmpty } from './directives/empty-template';
@@ -13,7 +14,7 @@ import { CairnClassNames } from './class-names';
   styleUrl: './data-table.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, NgClass],
   host: {
     '[class]': 'classNames().root || ""',
     'class': 'cairn-root'
@@ -24,11 +25,25 @@ export class DataTable<T> {
   readonly classNames = input<CairnClassNames>({});
   readonly caption = input<string>('');
   readonly loading = input<boolean>(false);
+  readonly emptyMessage = input<string>(DEFAULT_EMPTY_MESSAGE);
+  readonly selectable = input<boolean>(false);
 
   protected readonly cellTemplates = contentChildren(CairnCell);
-  protected readonly headerTemplate = contentChild(CairnHeader);
+  protected readonly headerTemplates = contentChildren(CairnHeader);
   protected readonly emptyTemplate = contentChild(CairnEmpty);
   protected readonly loadingTemplate = contentChild(CairnLoading);
+
+  protected get columnSpan(): number {
+    return this.table().visibleColumns().length + (this.selectable() ? 1 : 0);
+  }
+
+  protected headerTemplateFor(columnId: string): TemplateRef<{ $implicit: ColumnDef<T> }> | null {
+    const tpls = this.headerTemplates();
+    const specific = tpls.find(t => t.cairnHeader() === columnId);
+    if (specific) return specific.templateRef;
+    const generic = tpls.find(t => !t.cairnHeader());
+    return generic ? generic.templateRef : null;
+  }
 
   protected cellTemplateFor(columnId: string): TemplateRef<CellContext<T>> | null {
     const tpls = this.cellTemplates();

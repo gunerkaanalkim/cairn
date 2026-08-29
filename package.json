@@ -5,8 +5,11 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:lib": "ng build cairn-datatable && node scripts/strip-tslib.mjs",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:lib": "ng build cairn-datatable && ng test cairn-datatable --watch=false",
+    "verify": "ng build cairn-datatable && ng test cairn-datatable --watch=false && ng build cairn-demo"
   },
   "private": true,
   "packageManager": "npm@11.12.1",

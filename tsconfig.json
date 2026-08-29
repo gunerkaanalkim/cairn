@@ -4,8 +4,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@guneralkim/cairn-datatable": ["./dist/cairn-datatable"],
-      "@guneralkim/cairn-datatable/*": ["./dist/cairn-datatable/*"]
+      "@gunerkaanalkim/cairn-datatable": ["./dist/cairn-datatable"],
+      "@gunerkaanalkim/cairn-datatable/*": ["./dist/cairn-datatable/*"]
     },
     "strict": true,
     "noImplicitOverride": true,

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { createTable } from '@guneralkim/cairn-datatable/core';
-import { DataTable } from '@guneralkim/cairn-datatable';
+import { createTable } from '@gunerkaanalkim/cairn-datatable/core';
+import { DataTable } from '@gunerkaanalkim/cairn-datatable';
 import { DATA, COLUMNS } from '../../shared/sample-data';
 import { ExampleShell } from '../../shared/example-shell';
 
@@ -8,15 +8,7 @@ import { ExampleShell } from '../../shared/example-shell';
   selector: 'app-basic-example',
   standalone: true,
   imports: [DataTable, ExampleShell],
-  template: `
-    <app-example-shell title="Basic Example">
-      <cairn-data-table [table]="tableApi" />
-      <div>
-        <button (click)="tableApi.previousPage()">Prev</button>
-        <button (click)="tableApi.nextPage()">Next</button>
-      </div>
-    </app-example-shell>
-  `
+  templateUrl: './basic-example.html'
 })
 export class BasicExample {
   data = signal(DATA);

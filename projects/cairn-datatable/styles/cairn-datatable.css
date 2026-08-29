@@ -48,4 +48,27 @@
   .cairn-row:hover {
     background: var(--cairn-row-hover);
   }
+
+  .cairn-selection-header-cell, .cairn-selection-cell {
+    width: 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--cairn-border);
+    padding: 0.75rem 1rem;
+  }
+
+  .cairn-selection-header-cell {
+    background: var(--cairn-header-bg);
+  }
+
+  .cairn-table [data-align="start"] {
+    text-align: left;
+  }
+  
+  .cairn-table [data-align="center"] {
+    text-align: center;
+  }
+  
+  .cairn-table [data-align="end"] {
+    text-align: right;
+  }
 }

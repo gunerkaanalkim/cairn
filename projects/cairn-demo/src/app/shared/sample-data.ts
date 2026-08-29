@@ -1,4 +1,4 @@
-import { ColumnDef } from '@guneralkim/cairn-datatable/core';
+import { ColumnDef } from '@gunerkaanalkim/cairn-datatable/core';
 
 export interface User {
   id: number;

@@ -27,7 +27,7 @@ export function applyFilters<T>(
     for (const [colId, query] of Object.entries(columnFilters)) {
       if (!query) continue;
       const col = columns.find(c => c.id === colId);
-      if (!col) continue;
+      if (!col || col.filterable === false) continue;
       
       const val = readCellValue(row.data, col);
       const predicate = col.filterFn ?? fallback;

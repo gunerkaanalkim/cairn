@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import type { TableApi, TableOptions, TableState, SortState, PaginationState, RowId, Row, ColumnDef } from './types';
-import { DEFAULT_PAGE_SIZE, DEFAULT_EMPTY_MESSAGE, DEFAULT_SORT_CYCLE } from './defaults';
+import { DEFAULT_PAGE_SIZE } from './defaults';
 import { buildRows } from './internal/row-model';
 import { applyFilters, defaultFilterPredicate } from './internal/filtering';
 import { applySorting, defaultComparator } from './internal/sorting';
@@ -15,7 +15,13 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
   const columnFiltersState = signal<Readonly<Record<string, string>>>(initial.columnFilters || {});
   const paginationState = signal<PaginationState>(initial.pagination || { pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE });
   const selectionState = signal<ReadonlySet<RowId>>(initial.selection || new Set());
-  const hiddenColumnsState = signal<ReadonlySet<string>>(initial.hiddenColumns || new Set());
+  const initialHidden = new Set(initial.hiddenColumns || []);
+  if (!initial.hiddenColumns) {
+    for (const c of options.columns()) {
+      if (c.hidden === true) initialHidden.add(c.id);
+    }
+  }
+  const hiddenColumnsState = signal<ReadonlySet<string>>(initialHidden);
 
   const defaultRowId = (row: T, index: number) => index;
   const rowIdFn = options.rowId || defaultRowId;
@@ -27,7 +33,7 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
     const hidden = hiddenColumnsState();
     return cols.map(c => ({
       ...c,
-      hidden: c.hidden !== undefined ? (hidden.has(c.id) ? true : c.hidden) : hidden.has(c.id)
+      hidden: hidden.has(c.id)
     }));
   });
 
@@ -50,7 +56,7 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
     if (options.manual?.sorting) return rows;
     return applySorting(
       rows,
-      visibleColumnList(),
+      allColumns(),
       sortingState(),
       options.sortFn || defaultComparator
     );
@@ -127,6 +133,8 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
     selectedRows,
     
     toggleSort: (columnId, additive) => {
+      const col = allColumns().find(c => c.id === columnId);
+      if (!col || col.sortable === false) return;
       const current = sortingState();
       const multi = options.multiSort ?? true;
       const index = current.findIndex(s => s.id === columnId);
@@ -151,7 +159,10 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
       }
       sortingState.set(next);
     },
-    setSorting: (s) => sortingState.set(s),
+    setSorting: (s) => {
+      const cols = allColumns();
+      sortingState.set(s.filter(entry => cols.find(c => c.id === entry.id)?.sortable !== false));
+    },
     clearSorting: () => sortingState.set([]),
 
     setGlobalFilter: (q) => {
@@ -168,9 +179,9 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
       paginationState.update(p => ({ ...p, pageIndex: 0 }));
     },
 
-    setPageIndex: (i) => paginationState.update(p => ({ ...p, pageIndex: i })),
+    setPageIndex: (i) => paginationState.update(p => ({ ...p, pageIndex: clampPageIndex(i, pageCount()) })),
     setPageSize: (s) => paginationState.update(p => ({ ...p, pageSize: s, pageIndex: 0 })),
-    nextPage: () => paginationState.update(p => ({ ...p, pageIndex: p.pageIndex + 1 })),
+    nextPage: () => paginationState.update(p => ({ ...p, pageIndex: clampPageIndex(p.pageIndex + 1, pageCount()) })),
     previousPage: () => paginationState.update(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) })),
     firstPage: () => paginationState.update(p => ({ ...p, pageIndex: 0 })),
     lastPage: () => paginationState.update(p => ({ ...p, pageIndex: pageCount() - 1 })),
@@ -214,7 +225,8 @@ export function createTable<T>(options: TableOptions<T>): TableApi<T> {
       const col = allColumns().find(c => c.id === id);
       if (!col) return '';
       const val = api.cellValue(row, id);
-      return col.formatter ? col.formatter(val, row.data) : String(val);
+      if (col.formatter) return col.formatter(val, row.data);
+      return val === null || val === undefined ? '' : String(val);
     },
 
     setState: (s) => {

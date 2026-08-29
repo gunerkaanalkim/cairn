@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { createTable } from '@guneralkim/cairn-datatable/core';
-import { DataTable } from '@guneralkim/cairn-datatable';
+import { createTable } from '@gunerkaanalkim/cairn-datatable/core';
+import { DataTable } from '@gunerkaanalkim/cairn-datatable';
 import { DATA, COLUMNS } from '../../shared/sample-data';
 import { ExampleShell } from '../../shared/example-shell';
 
@@ -8,11 +8,7 @@ import { ExampleShell } from '../../shared/example-shell';
   selector: 'app-styled-example',
   standalone: true,
   imports: [DataTable, ExampleShell],
-  template: `
-    <app-example-shell title="Styled Example">
-      <cairn-data-table [table]="tableApi" />
-    </app-example-shell>
-  `
+  templateUrl: './styled-example.html'
 })
 export class StyledExample {
   data = signal(DATA);

@@ -27,7 +27,11 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/cairn-datatable/tsconfig.spec.json"
+            "tsConfig": "projects/cairn-datatable/tsconfig.spec.json",
+            "include": [
+              "**/*.spec.ts",
+              "../core/src/**/*.spec.ts"
+            ]
           }
         }
       }

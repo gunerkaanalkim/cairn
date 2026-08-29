@@ -12,6 +12,8 @@ export interface CairnClassNames {
   readonly rowEven?: string;
   readonly rowOdd?: string;
   readonly cell?: string;
+  readonly selectionHeaderCell?: string;
+  readonly selectionCell?: string;
   readonly emptyRow?: string;
   readonly emptyCell?: string;
   readonly loadingRow?: string;

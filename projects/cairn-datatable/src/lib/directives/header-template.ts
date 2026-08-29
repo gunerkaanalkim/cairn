@@ -1,5 +1,5 @@
 import { Directive, TemplateRef, inject, input } from '@angular/core';
-import type { ColumnDef } from '@guneralkim/cairn-datatable/core';
+import type { ColumnDef } from '@gunerkaanalkim/cairn-datatable/core';
 
 @Directive({
   selector: '[cairnHeader]',

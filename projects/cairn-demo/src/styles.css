@@ -1,2 +1,3 @@
-/* In an actual app this would be: @import '@guneralkim/cairn-datatable/styles/cairn-datatable.css'; */
+@import 'tailwindcss';
+/* In an actual app this would be: @import '@gunerkaanalkim/cairn-datatable/styles/cairn-datatable.css'; */
 @import '../../../dist/cairn-datatable/styles/cairn-datatable.css';
