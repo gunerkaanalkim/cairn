@@ -1,858 +1,675 @@
-# Angular Sinyal Tabanlı DataTable — Ürün Gereksinim Dokümanı
+# Cairn DataTable — Detaylı Geliştirme Planı
 
-Doküman türü: PRD (Product Requirements Document / Ürün Gereksinim Dokümanı)
-Sürüm: 1.0
-Tarih: 28 Ağustos 2026
+Bu doküman, PRD (Product Requirements Document / Ürün Gereksinim Dokümanı) bölüm 12'deki on dört adımlık geliştirme sırasını dosya ve klasör düzeyinde açar.
 
----
+Paket adı: `@guneralkim/cairn-datatable`
+Çalışma alanı kökü: `cairn-workspace/`
+Kütüphane kökü: `cairn-workspace/projects/cairn-datatable/`
+Demo kökü: `cairn-workspace/projects/cairn-demo/`
 
-## 1. Ürün Tanımı
-
-Angular 21 ve üzeri için, sinyal (signal) tabanlı, zonesiz (zoneless) çalışan bir veri tablosu kütüphanesi.
-
-İki katman halinde sunulur:
-
-1. **Çekirdek katman (core):** Saf TypeScript mantığı. DOM (Document Object Model / Belge Nesne Modeli) ile hiçbir teması yok. Sıralama, filtreleme, sayfalama, seçim ve sütun görünürlüğü durumunu yönetir.
-2. **Bileşen katmanı (component):** Çekirdeği tüketen, minimum stille gelen, hazır kullanılabilir Angular bileşeni.
-
-Kullanıcı üç farklı seviyede kullanabilir:
-
-1. Bileşeni doğrudan kullanır, veriyi ve sütunları verir, biter.
-2. Bileşeni kullanır ama çekirdek örneğini kendisi oluşturup dışarıdan verir.
-3. Sadece çekirdeği kullanır, tüm HTML'i kendisi yazar.
+Tüm göreli yollar çalışma alanı kökünden verilmiştir.
 
 ---
 
-## 2. Konumlandırma ve Farklılaşma
+## 0. Bitmiş hâlde klasör yapısı
 
-Kütüphanenin README (Beni Oku) dosyasının ilk paragrafında savunulacak cümle şudur:
+Bu ağaç, on dördüncü adım tamamlandığında elinde olması gereken yapıdır. Aşağıdaki adımlarda hangi dosyayı ne zaman oluşturacağın tek tek yazılıdır.
 
-> Angular 21+ için sıfır bağımlılıklı, sinyallerle yazılmış, minimum stille gelen ve her iç parçasına dışarıdan sınıf verilebilen bir veri tablosu.
-
-Rakiplerden ayrışma noktaları:
-
-1. TanStack Table tamamen başsızdır (headless), hiç arayüz vermez. Bu kütüphane minimum bir arayüz verir.
-2. PrimeNG Table ve AG Grid hazır arayüz verir ama ezmesi zordur. Bu kütüphanede ezme kavramı yoktur; sınıflar doğrudan enjekte edilir.
-3. Angular Material Table sürükleyici bir bağımlılık ağacı getirir. Bu kütüphanenin çalışma zamanı bağımlılığı sıfırdır.
-
----
-
-## 3. Teknik Kısıtlar (Kararlaştırılmış)
-
-1. Minimum Angular sürümü: 21.0.0
-2. Zonesiz çalışma zorunludur. Zone.js varsayımı içeren hiçbir kod yazılmaz.
-3. Çalışma zamanı bağımlılığı sıfırdır. Sadece `@angular/core` ve `@angular/common` eşdeğer bağımlılık (peer dependency) olarak tanımlanır. Angular CDK (Component Dev Kit / Bileşen Geliştirme Kiti) dahi kullanılmaz.
-4. Dağıtım: tek npm (Node Package Manager / Node Paket Yöneticisi) paketi, iki giriş noktası.
-5. Veri modu: sadece istemci tarafı. Ancak sıralama ve filtreleme fonksiyonları dışarıdan verilebilir olacak, böylece ileride sunucu tarafı desteği kırıcı değişiklik olmadan eklenebilecek.
-6. Lisans: MIT
-7. Tüm kod TypeScript strict modda yazılır.
-8. Kod içindeki yorum satırları İngilizce yazılır.
-9. Varsayılan stiller `@layer` içine alınır ve isteğe bağlı olarak içe aktarılır.
-10. Erişilebilirlik pazarlık dışıdır. ARIA (Accessible Rich Internet Applications / Erişilebilir Zengin İnternet Uygulamaları) öznitelikleri ve klavye desteği v1'e dahildir.
-
----
-
-## 4. Kapsam
-
-### 4.1 v1 içinde olanlar
-
-1. Tek sütun ve çoklu sütun sıralama
-2. Global metin filtresi
-3. Sütun bazlı filtre
-4. Sayfalama
-5. Satır seçimi: tek satır, çoklu satır, tümünü seç
-6. Sütun görünürlüğü açma ve kapama
-7. Boş durum (empty state) gösterimi
-8. Yükleniyor durumu (loading state) gösterimi
-9. `ng-template` ile hücre, başlık ve boş durum şablonu özelleştirme
-10. Parça bazlı sınıf enjeksiyonu
-11. İsteğe bağlı varsayılan stil dosyası
-12. Klavye ile gezinme ve ARIA desteği
-
-### 4.2 v1 dışında bırakılanlar
-
-1. Sanallaştırma (virtualization)
-2. Gruplama ve toplama (aggregation)
-3. Ağaç yapılı satırlar
-4. Satır içi düzenleme (inline editing)
-5. Sütun yeniden boyutlandırma ve sürükleyerek taşıma
-6. Excel veya CSV (Comma Separated Values / Virgülle Ayrılmış Değerler) dışa aktarma
-7. Sunucu tarafı veri modu
-8. Sabitlenmiş sütunlar (column pinning)
-
-Bu maddeler README dosyasında "Yol Haritası" başlığı altında açıkça listelenir. Kapsamı bilinçli olarak dar tuttuğunu yazmak, eksiklik gibi görünmesini engeller.
-
----
-
-## 5. Çekirdek Katman Tasarımı
-
-### 5.1 Sütun tanımı
-
-```typescript
-export type ColumnAlign = 'start' | 'center' | 'end';
-
-export interface ColumnDef<T> {
-  /** Unique identifier for the column. Also used as the default accessor key. */
-  readonly id: string;
-
-  /** Text shown in the header cell. */
-  readonly header: string;
-
-  /** Extracts the raw value from a row. Defaults to row[id]. */
-  readonly accessor?: (row: T) => unknown;
-
-  /** Enables sorting on this column. Default: true */
-  readonly sortable?: boolean;
-
-  /** Enables per-column filtering. Default: false */
-  readonly filterable?: boolean;
-
-  /**
-   * Custom comparator. Receives the two raw values produced by the accessor.
-   * Return a negative number, zero, or a positive number.
-   */
-  readonly sortFn?: (a: unknown, b: unknown) => number;
-
-  /** Custom predicate for filtering. Receives the raw value and the search term. */
-  readonly filterFn?: (value: unknown, term: string) => boolean;
-
-  /** Whether the column is visible on first render. Default: true */
-  readonly visible?: boolean;
-
-  /** Applied as inline width on the column. Example: '120px', '20%' */
-  readonly width?: string;
-
-  /** Horizontal alignment of the cell content. Default: 'start' */
-  readonly align?: ColumnAlign;
-}
+```
+cairn-workspace/
+├── angular.json
+├── package.json
+├── tsconfig.json
+├── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   ├── publish.yml
+│   │   └── deploy-demo.yml
+│   └── ISSUE_TEMPLATE/
+│       ├── bug_report.md
+│       └── feature_request.md
+└── projects/
+    ├── cairn-datatable/
+    │   ├── ng-package.json
+    │   ├── package.json
+    │   ├── README.md
+    │   ├── LICENSE
+    │   ├── tsconfig.lib.json
+    │   ├── tsconfig.lib.prod.json
+    │   ├── tsconfig.spec.json
+    │   ├── core/
+    │   │   ├── ng-package.json
+    │   │   └── src/
+    │   │       ├── public-api.ts
+    │   │       ├── types.ts
+    │   │       ├── defaults.ts
+    │   │       ├── create-table.ts
+    │   │       ├── create-table.spec.ts
+    │   │       └── internal/
+    │   │           ├── row-model.ts
+    │   │           ├── row-model.spec.ts
+    │   │           ├── filtering.ts
+    │   │           ├── filtering.spec.ts
+    │   │           ├── sorting.ts
+    │   │           ├── sorting.spec.ts
+    │   │           ├── pagination.ts
+    │   │           ├── pagination.spec.ts
+    │   │           ├── selection.ts
+    │   │           └── selection.spec.ts
+    │   ├── styles/
+    │   │   └── cairn-datatable.css
+    │   └── src/
+    │       ├── public-api.ts
+    │       └── lib/
+    │           ├── data-table.ts
+    │           ├── data-table.html
+    │           ├── data-table.css
+    │           ├── data-table.spec.ts
+    │           ├── class-names.ts
+    │           └── directives/
+    │               ├── cell-template.ts
+    │               ├── header-template.ts
+    │               ├── empty-template.ts
+    │               └── loading-template.ts
+    └── cairn-demo/
+        └── src/
+            ├── styles.css
+            └── app/
+                ├── app.ts
+                ├── app.html
+                ├── app.routes.ts
+                ├── shared/
+                │   ├── sample-data.ts
+                │   └── example-shell.ts
+                └── examples/
+                    ├── basic/
+                    │   ├── basic-example.ts
+                    │   └── basic-example.html
+                    ├── styled/
+                    │   ├── styled-example.ts
+                    │   └── styled-example.html
+                    ├── tailwind/
+                    │   ├── tailwind-example.ts
+                    │   └── tailwind-example.html
+                    └── headless/
+                        ├── headless-example.ts
+                        └── headless-example.html
 ```
 
-Tasarım notları:
+---
 
-1. `id` alanı `keyof T` yerine `string` olarak tanımlandı. Sebebi, hesaplanmış sütunlara (örneğin ad ve soyadı birleştiren bir sütun) izin vermek. Tip güvenliğini `accessor` fonksiyonu üzerinden sağlıyoruz.
-2. `sortFn` ve `filterFn` alanları, ileride sunucu tarafı desteği eklerken kapıyı açık tutar.
-3. Bütün alanlar `readonly`. Sütun tanımı değişmez (immutable) bir yapıdır.
+## Adım 1 — Çalışma alanı ve kütüphane iskeleti
 
-### 5.2 Durum tipleri
+Bu adım büyük ölçüde tamamlandı. Eksik kalanları kapat.
+
+Oluşturulacak dosyalar:
+
+1. `projects/cairn-datatable/core/ng-package.json` — ikincil giriş noktası tanımı. İçeriği sadece `{ "lib": { "entryFile": "src/public-api.ts" } }` olacak.
+2. `projects/cairn-datatable/LICENSE` — MIT metni.
+3. `projects/cairn-datatable/README.md` — şimdilik tek satır yer tutucu, adım 12'de doldurulacak.
+
+Düzenlenecek dosyalar:
+
+1. `cairn-workspace/tsconfig.json` — `paths` alanına `"@guneralkim/cairn-datatable/*": ["./dist/cairn-datatable/*"]` girişini ekle.
+2. `projects/cairn-datatable/tsconfig.lib.json` — `compilerOptions` içine `"importHelpers": false` ekle, `tslib` bağımlılığını kaldırmak için.
+3. `projects/cairn-datatable/package.json` — `repository` nesnesine `"directory": "projects/cairn-datatable"` ekle.
+4. `projects/cairn-datatable/ng-package.json` — `assets` alanına `"./styles/**/*.css"` ekle. Klasör henüz boş olsa da şimdi ekle, adım 9'da doldurulacak.
+
+Doğrulama komutu:
+
+```bash
+rm -rf dist && ng build cairn-datatable && ls dist/cairn-datatable
+```
+
+Tamamlanma ölçütü: `dist/cairn-datatable` içinde `core`, `fesm2022`, `types`, `LICENSE`, `README.md`, `package.json` bulunmalı ve `package.json` içinde `dependencies` alanı olmamalı.
+
+---
+
+## Adım 2 — Tip tanımları
+
+Bu adım ayrı bir dokümanda tam olarak açıldı, burada sadece dosya listesi verilir.
+
+Oluşturulacak dosyalar:
+
+1. `projects/cairn-datatable/core/src/types.ts` — `RowId`, `SortDirection`, `ColumnAlign`, `Accessor`, `ColumnDef`, `Row`, `SortState`, `PaginationState`, `TableState`, `TableOptions`, `TableApi` tipleri.
+2. `projects/cairn-datatable/core/src/defaults.ts` — `DEFAULT_PAGE_SIZE`, `DEFAULT_EMPTY_MESSAGE`, `DEFAULT_SORT_CYCLE` sabitleri.
+3. `projects/cairn-datatable/core/src/public-api.ts` — yukarıdaki ikisinin dışa aktarımı.
+
+Tamamlanma ölçütü: `npx tsc --noEmit -p projects/cairn-datatable/tsconfig.lib.json` komutu hatasız geçmeli.
+
+---
+
+## Adım 3 — createTable fabrikası ve türetme zinciri
+
+Bu adım projenin kalbi. Tek dosyaya sıkıştırma, altı parçaya böl. Her parça saf fonksiyon olacak, sinyal bilmeyecek. Sinyal zincirini sadece `create-table.ts` kuracak.
+
+### 3.1 Oluşturulacak yardımcı dosyalar
+
+Hepsi `projects/cairn-datatable/core/src/internal/` klasöründe.
+
+**Dosya 1: `row-model.ts`**
+
+Ham veriyi `Row` nesnelerine çevirir. Dışa aktaracağı fonksiyon:
 
 ```typescript
-export type SortDirection = 'asc' | 'desc';
+export function buildRows<T>(
+  data: readonly T[],
+  rowId: (row: T, index: number) => RowId,
+): readonly Row<T>[]
+```
 
-export interface SortState {
+Kurallar: kaynak diziyi asla değiştirme, her satıra `sourceIndex` ata, `selected` alanını başlangıçta `false` bırak.
+
+**Dosya 2: `filtering.ts`**
+
+Dışa aktaracağı üç fonksiyon:
+
+```typescript
+export function readCellValue<T>(row: T, column: ColumnDef<T>): unknown
+export function defaultFilterPredicate(value: unknown, query: string): boolean
+export function applyFilters<T>(
+  rows: readonly Row<T>[],
+  columns: readonly ColumnDef<T>[],
+  globalFilter: string,
+  columnFilters: Readonly<Record<string, string>>,
+  fallback: (value: unknown, query: string) => boolean,
+): readonly Row<T>[]
+```
+
+Kritik kural: `applyFilters` fonksiyonuna sadece görünür sütunlar geçilecek. Gizli sütunun filtresi uygulanmamalı. PRD test maddesi 13 bunu doğruluyor.
+
+**Dosya 3: `sorting.ts`**
+
+Dışa aktaracağı iki fonksiyon:
+
+```typescript
+export function defaultComparator(a: unknown, b: unknown): number
+export function applySorting<T>(
+  rows: readonly Row<T>[],
+  columns: readonly ColumnDef<T>[],
+  sorting: readonly SortState[],
+  fallback: (a: unknown, b: unknown) => number,
+): readonly Row<T>[]
+```
+
+Kritik kurallar: `null` ve `undefined` değerler yönden bağımsız olarak sona gitmeli. Sıralama kararlı (stable) olmalı, `Array.prototype.sort` modern motorlarda kararlıdır ama kaynak diziyi değiştirir, bu yüzden önce kopyala. Çoklu sıralamada dizideki sıra öncelik demektir.
+
+**Dosya 4: `pagination.ts`**
+
+Dışa aktaracağı iki fonksiyon:
+
+```typescript
+export function clampPageIndex(pageIndex: number, pageCount: number): number
+export function applyPagination<T>(
+  rows: readonly Row<T>[],
+  pagination: PaginationState,
+): readonly Row<T>[]
+```
+
+Kritik kurallar: sayfa sayısı hiçbir zaman sıfır olmamalı, en az bir dönmeli. Sayfa indeksi sınır dışına çıkamamalı.
+
+**Dosya 5: `selection.ts`**
+
+Dışa aktaracağı üç fonksiyon:
+
+```typescript
+export function markSelected<T>(
+  rows: readonly Row<T>[],
+  selection: ReadonlySet<RowId>,
+): readonly Row<T>[]
+export function toggleId(selection: ReadonlySet<RowId>, id: RowId): ReadonlySet<RowId>
+export function togglePageIds(
+  selection: ReadonlySet<RowId>,
+  pageIds: readonly RowId[],
+): ReadonlySet<RowId>
+```
+
+Kritik kural: `togglePageIds` sadece verilen kimlikleri etkilemeli, diğer sayfalardaki seçim korunmalı.
+
+### 3.2 Ana fabrika dosyası
+
+**Dosya: `projects/cairn-datatable/core/src/create-table.ts`**
+
+İçinde kuracağın sinyal zinciri şu sırada olmalı ve **her aşama ayrı bir `computed` olmalı**:
+
+1. `baseRows` — `buildRows` çağrısı, `data` ve `rowId` bağımlı.
+2. `visibleColumnList` — gizli sütunları eleyen hesaplama.
+3. `filteredRows` — `applyFilters` çağrısı.
+4. `sortedRows` — `applySorting` çağrısı.
+5. `pageCount` — `filteredRows` uzunluğu ve sayfa boyutundan.
+6. `pagedRows` — `applyPagination` çağrısı.
+7. `rows` — `markSelected` çağrısı, dışarıya verilen son hâl.
+
+Durum sinyalleri (`signal` ile, `computed` değil):
+
+1. `sortingState`
+2. `globalFilterState`
+3. `columnFiltersState`
+4. `paginationState`
+5. `selectionState`
+6. `hiddenColumnsState`
+
+Yazma metotlarının hepsi bu altı sinyali günceller, başka hiçbir şeye dokunmaz.
+
+Zincirin sırasını bozma. Sayfalamayı sıralamadan önce yaparsan tablo yanlış sonuç verir. Tek büyük `computed` yazarsan PRD test maddesi 15'i geçemezsin.
+
+Filtre değiştiğinde sayfa indeksini sıfırlamak için `effect` kullanma. Bunun yerine `setGlobalFilter` ve `setColumnFilter` metotlarının içinde `paginationState` sinyalini elle sıfırla. Sebep: `effect` içinde sinyal yazmak Angular'da uyarı üretir ve zonesiz ortamda sıralama garantisi vermez.
+
+### 3.3 Genel arayüzü güncelle
+
+**Düzenlenecek dosya: `projects/cairn-datatable/core/src/public-api.ts`**
+
+Şu satırı ekle: `export { createTable } from './create-table';`
+
+`internal/` klasöründeki hiçbir dosyayı dışa aktarma. Onlar uygulama detayı, dışarı sızarsa ileride değiştiremezsin.
+
+Tamamlanma ölçütü: `ng build cairn-datatable` hatasız geçmeli ve `dist/cairn-datatable/types/guneralkim-cairn-datatable-core.d.ts` dosyasında `internal` kelimesi geçmemeli.
+
+---
+
+## Adım 4 — Çekirdek birim testleri
+
+Test dosyaları test edilen dosyanın yanında durur, ayrı bir `tests` klasörü açma.
+
+Oluşturulacak dosyalar:
+
+1. `projects/cairn-datatable/core/src/internal/row-model.spec.ts`
+2. `projects/cairn-datatable/core/src/internal/filtering.spec.ts`
+3. `projects/cairn-datatable/core/src/internal/sorting.spec.ts`
+4. `projects/cairn-datatable/core/src/internal/pagination.spec.ts`
+5. `projects/cairn-datatable/core/src/internal/selection.spec.ts`
+6. `projects/cairn-datatable/core/src/create-table.spec.ts`
+
+PRD bölüm 9.1'deki on beş maddeyi şöyle dağıt:
+
+1. Maddeler 2, 3, 4 → `sorting.spec.ts`
+2. Maddeler 5, 6, 7 → `filtering.spec.ts`
+3. Maddeler 9, 10 → `pagination.spec.ts`
+4. Maddeler 11, 12 → `selection.spec.ts`
+5. Maddeler 1, 8, 13, 14, 15 → `create-table.spec.ts`
+
+Onbeşinci madde özel dikkat ister. Sıralama fonksiyonunun kaç kez çağrıldığını saymak için sütun tanımına sayaç artıran bir `sortFn` ver, sonra sadece sayfa indeksini değiştir ve sayacın artmadığını doğrula.
+
+Sinyal okuyan testlerde `TestBed` gerekmez, çünkü `computed` bağlamsız çalışır. Sadece `createTable` çağırıp sonucu oku.
+
+Çalıştırma komutu: `ng test cairn-datatable`
+
+Tamamlanma ölçütü: on beş maddenin hepsi geçmeli.
+
+---
+
+## Adım 5 — Bileşen iskeleti ve şablonu
+
+Bu adım ayrı bir dokümanda tam olarak açıldı, burada dosya listesi verilir.
+
+Silinecek dosyalar:
+
+1. `projects/cairn-datatable/src/lib/cairn-datatable.ts`
+2. `projects/cairn-datatable/src/lib/cairn-datatable.spec.ts`
+3. `projects/cairn-datatable/src/lib/cairn-datatable.service.ts` (varsa)
+
+Oluşturulacak dosyalar:
+
+1. `projects/cairn-datatable/src/lib/data-table.ts` — `DataTable<T>` sınıfı.
+2. `projects/cairn-datatable/src/lib/data-table.html` — şablon.
+3. `projects/cairn-datatable/src/lib/data-table.css` — sadece `:host { display: block; }`.
+
+Düzenlenecek dosya:
+
+1. `projects/cairn-datatable/src/public-api.ts` — `export * from './lib/data-table';` ve `export * from '@guneralkim/cairn-datatable/core';`
+
+Tamamlanma ölçütü: demo uygulamasında iki satırlı bir tablo görünmeli ve başlığa tıklayınca sıra değişmeli.
+
+---
+
+## Adım 6 — Şablon direktifleri
+
+Amaç: kullanıcının hücre, başlık, boş durum ve yükleniyor durumu görünümlerini kendi HTML (HyperText Markup Language / Hiper Metin İşaretleme Dili) parçalarıyla değiştirebilmesi.
+
+Oluşturulacak dosyalar, hepsi `projects/cairn-datatable/src/lib/directives/` klasöründe:
+
+**Dosya 1: `cell-template.ts`**
+
+```typescript
+import { Directive, TemplateRef, inject, input } from '@angular/core';
+
+export interface CellContext<T> {
+  readonly $implicit: unknown;
+  readonly row: T;
   readonly columnId: string;
-  readonly direction: SortDirection;
 }
 
-export interface ColumnFilterState {
-  readonly columnId: string;
-  readonly term: string;
-}
-
-export type RowId = string | number;
-```
-
-### 5.3 Tablo seçenekleri
-
-```typescript
-export interface TableOptions<T> {
-  /** Source rows. Never mutated by the table. */
-  readonly data: readonly T[];
-
-  readonly columns: readonly ColumnDef<T>[];
-
-  /**
-   * Produces a stable identity for a row. Required for selection and for
-   * the track expression in the template. Defaults to the array index,
-   * which disables stable selection across data changes.
-   */
-  readonly rowId?: (row: T, index: number) => RowId;
-
-  /** Number of rows per page. Default: 10 */
-  readonly pageSize?: number;
-
-  /** Allow more than one column to be sorted at once. Default: false */
-  readonly multiSort?: boolean;
-
-  /** Initial sort applied on creation. */
-  readonly initialSort?: readonly SortState[];
-
-  /**
-   * Fallback comparator used when a column has no sortFn.
-   * Default implementation handles string, number, boolean, Date and null.
-   */
-  readonly defaultSortFn?: (a: unknown, b: unknown) => number;
-
-  /**
-   * Fallback predicate used when a column has no filterFn.
-   * Default implementation is a case-insensitive substring match.
-   */
-  readonly defaultFilterFn?: (value: unknown, term: string) => boolean;
-}
-```
-
-### 5.4 Genel arayüz
-
-```typescript
-export interface TableRow<T> {
-  readonly id: RowId;
-  readonly index: number;
-  readonly data: T;
-  readonly selected: boolean;
-}
-
-export interface TableCell {
-  readonly columnId: string;
-  readonly value: unknown;
-}
-
-export interface TableApi<T> {
-  // --- read-only derived state ---
-
-  /** Rows after filtering, sorting and pagination. */
-  readonly rows: Signal<readonly TableRow<T>[]>;
-
-  /** Columns currently visible, in display order. */
-  readonly visibleColumns: Signal<readonly ColumnDef<T>[]>;
-
-  /** Row count after filtering, before pagination. */
-  readonly filteredCount: Signal<number>;
-
-  /** Total number of pages. Minimum 1. */
-  readonly pageCount: Signal<number>;
-
-  /** Zero-based page index. */
-  readonly pageIndex: Signal<number>;
-
-  readonly pageSize: Signal<number>;
-  readonly sort: Signal<readonly SortState[]>;
-  readonly globalFilter: Signal<string>;
-  readonly columnFilters: Signal<readonly ColumnFilterState[]>;
-  readonly selectedIds: Signal<ReadonlySet<RowId>>;
-  readonly allPageRowsSelected: Signal<boolean>;
-  readonly somePageRowsSelected: Signal<boolean>;
-
-  // --- commands ---
-
-  /**
-   * Cycles the column through asc, desc and unsorted.
-   * When multiSort is false, clears any other active sort first.
-   */
-  toggleSort(columnId: string): void;
-  setSort(sort: readonly SortState[]): void;
-  clearSort(): void;
-
-  setGlobalFilter(term: string): void;
-  setColumnFilter(columnId: string, term: string): void;
-  clearFilters(): void;
-
-  setPageIndex(index: number): void;
-  nextPage(): void;
-  previousPage(): void;
-  firstPage(): void;
-  lastPage(): void;
-  setPageSize(size: number): void;
-
-  toggleRowSelection(id: RowId): void;
-  selectRow(id: RowId): void;
-  deselectRow(id: RowId): void;
-  toggleAllPageRows(): void;
-  clearSelection(): void;
-  getSelectedRows(): readonly T[];
-
-  setColumnVisibility(columnId: string, visible: boolean): void;
-  toggleColumnVisibility(columnId: string): void;
-  resetColumnVisibility(): void;
-}
-```
-
-### 5.5 Fabrika fonksiyonu
-
-```typescript
-export function createTable<T>(options: TableOptions<T> | (() => TableOptions<T>)): TableApi<T>;
-```
-
-Fonksiyon hem düz nesne hem de fonksiyon kabul eder. Fonksiyon verildiğinde reaktif olur, yani `data` veya `columns` bir sinyalden geliyorsa tablo kendiliğinden güncellenir.
-
-### 5.6 Türetme zinciri
-
-Hesaplama sırası kesin olarak şudur ve değiştirilemez:
-
-1. Kaynak veri
-2. Global filtre uygulanır
-3. Sütun filtreleri uygulanır
-4. Sıralama uygulanır
-5. Sayfalama uygulanır
-
-Her adım bir `computed` olarak yazılır ve bir öncekine bağlanır. Böylece sadece sayfa değiştiğinde filtreleme ve sıralama yeniden hesaplanmaz.
-
-```typescript
-// Derivation chain, each step memoized independently
-const globallyFiltered = computed(() => {
-  /* ... */
-});
-const columnFiltered = computed(() => {
-  /* ... */
-});
-const sorted = computed(() => {
-  /* ... */
-});
-const paginated = computed(() => {
-  /* ... */
-});
-```
-
-### 5.7 Sayfa indeksi davranışı
-
-Filtre değiştiğinde sayfa indeksi sıfırlanmalıdır. Bunun için `linkedSignal` kullanılır, `effect` kullanılmaz.
-
-```typescript
-const pageIndex = linkedSignal<number, number>({
-  source: () => columnFiltered().length,
-  computation: () => 0,
-});
-```
-
-### 5.8 Değişmezlik kuralları
-
-1. Kaynak dizi asla değiştirilmez. Sıralamadan önce mutlaka kopya alınır.
-2. `computed` içinde asla sinyal yazılmaz.
-3. `effect` sadece gerçek yan etkiler için kullanılır. Durum senkronizasyonu için kullanılmaz.
-4. Seçim durumu `Set` içinde tutulur ve her değişimde yeni bir `Set` üretilir.
-
-### 5.9 Varsayılan karşılaştırıcı davranışı
-
-Varsayılan `sortFn` şu kurallara uyar:
-
-1. `null` ve `undefined` değerler her zaman sona yerleştirilir, sıralama yönünden bağımsız olarak.
-2. Sayılar sayısal olarak karşılaştırılır.
-3. Dizeler `localeCompare` ile karşılaştırılır, `sensitivity: 'base'` seçeneğiyle.
-4. `Date` nesneleri zaman damgasına göre karşılaştırılır.
-5. `boolean` değerlerde `false` önce gelir.
-6. Tip uyuşmazlığında değerler dizeye çevrilip karşılaştırılır.
-
----
-
-## 6. Bileşen Katmanı Tasarımı
-
-### 6.1 Bileşen girdileri
-
-```typescript
-@Component({
-  selector: 'ng-datatable',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './datatable.html',
+@Directive({
+  selector: '[cairnCell]',
 })
-export class DataTable<T> {
-  /** Provide either data + columns, or a pre-built table instance. */
-  readonly data = input<readonly T[]>([]);
-  readonly columns = input<readonly ColumnDef<T>[]>([]);
-  readonly table = input<TableApi<T> | null>(null);
+export class CairnCell<T> {
+  /** Column id this template overrides. Omit to override every column. */
+  readonly cairnCell = input<string | undefined>(undefined);
 
-  readonly rowId = input<((row: T, index: number) => RowId) | undefined>();
-  readonly pageSize = model<number>(10);
-  readonly multiSort = input<boolean>(false);
+  readonly templateRef = inject<TemplateRef<CellContext<T>>>(TemplateRef);
 
-  readonly loading = input<boolean>(false);
-  readonly emptyMessage = input<string>('No data');
-
-  readonly selectable = input<'none' | 'single' | 'multiple'>('none');
-  readonly showPagination = input<boolean>(true);
-  readonly showGlobalFilter = input<boolean>(false);
-
-  readonly classNames = input<TableClassNames>({});
-
-  /** Optional per-row class resolver. */
-  readonly rowClass = input<((row: TableRow<T>) => string) | undefined>();
-
-  // --- outputs ---
-  readonly rowClick = output<TableRow<T>>();
-  readonly selectionChange = output<readonly T[]>();
-  readonly sortChange = output<readonly SortState[]>();
+  /** Enables strict template type checking for the context object. */
+  static ngTemplateContextGuard<T>(
+    _dir: CairnCell<T>,
+    _ctx: unknown,
+  ): _ctx is CellContext<T> {
+    return true;
+  }
 }
 ```
 
-### 6.2 Örnek çözümleme mantığı
+`ngTemplateContextGuard` satırını atlama. O olmadan kullanıcının şablonunda `row` nesnesi `any` tipinde gelir ve tip güvenliği sözünü tutamazsın.
 
-Bileşen, `table` girdisi verilmişse onu kullanır, verilmemişse kendisi oluşturur:
+**Dosya 2: `header-template.ts`** — aynı desen, seçici `[cairnHeader]`, bağlam `{ $implicit: ColumnDef<T> }`.
+
+**Dosya 3: `empty-template.ts`** — seçici `[cairnEmpty]`, bağlam boş.
+
+**Dosya 4: `loading-template.ts`** — seçici `[cairnLoading]`, bağlam boş.
+
+Düzenlenecek dosyalar:
+
+1. `projects/cairn-datatable/src/lib/data-table.ts` — dört direktifi `contentChildren` ve `contentChild` ile topla:
 
 ```typescript
-protected readonly api: Signal<TableApi<T>> = computed(() => {
-  const provided = this.table();
-  if (provided) {
-    return provided;
-  }
-  return this.internalTable;
-});
+protected readonly cellTemplates = contentChildren(CairnCell);
+protected readonly headerTemplate = contentChild(CairnHeader);
+protected readonly emptyTemplate = contentChild(CairnEmpty);
+protected readonly loadingTemplate = contentChild(CairnLoading);
 ```
 
-`internalTable` bir kere oluşturulur ve `createTable` fonksiyonuna bir seçenek fonksiyonu verilir, böylece `data` ve `columns` girdileri değiştiğinde tablo reaktif olarak güncellenir.
+Ayrıca sütun kimliğine göre şablon bulan bir yardımcı ekle:
 
-### 6.3 Şablon özelleştirme
+```typescript
+protected cellTemplateFor(columnId: string): TemplateRef<CellContext<T>> | null
+```
 
-Kullanıcı `ng-template` ile hücre ve başlık şablonu verebilir. Yapı direktifi yerine içerik projeksiyonu kullanılır.
-
-Kullanım şu şekilde olur:
+2. `projects/cairn-datatable/src/lib/data-table.html` — her hücrede önce özel şablon var mı diye bak, yoksa varsayılana düş:
 
 ```html
-<ng-datatable [data]="people" [columns]="cols">
-  <ng-template ngDataTableCell="email" let-value let-row="row">
-    <a [href]="'mailto:' + value">{{ value }}</a>
-  </ng-template>
-
-  <ng-template ngDataTableHeader="email">
-    <strong>E-posta</strong>
-  </ng-template>
-
-  <ng-template ngDataTableEmpty>
-    <p>Kayıt bulunamadı.</p>
-  </ng-template>
-</ng-datatable>
+@if (cellTemplateFor(column.id); as tpl) {
+  <ng-container
+    *ngTemplateOutlet="tpl; context: cellContext(row, column)"
+  />
+} @else {
+  {{ cellText(row, column) }}
+}
 ```
 
-Bunun için üç direktif yazılır: `NgDataTableCell`, `NgDataTableHeader`, `NgDataTableEmpty`. Her biri `TemplateRef` tutar ve `contentChildren` ile toplanır.
+`ngTemplateOutlet` kullanmak için bileşenin `imports` dizisine `NgTemplateOutlet` eklemen gerekir. Bu `@angular/common` paketinden gelir ve tek başına içe aktarılabilir, `CommonModule` tamamını almana gerek yok.
+
+3. `projects/cairn-datatable/src/public-api.ts` — dört direktifi ve `CellContext` tipini dışa aktar. Kullanıcı bunları `imports` dizisine ekleyecek.
+
+Tamamlanma ölçütü: demo uygulamasında bir sütunun hücresini özel şablonla değiştirdiğinde sadece o sütun değişmeli.
+
+---
+
+## Adım 7 — Sınıf enjeksiyonu ve veri öznitelikleri
+
+Amaç: kullanıcının tablonun her parçasına kendi CSS (Cascading Style Sheets / Basamaklı Stil Şablonları) sınıflarını verebilmesi. Bu, kütüphanenin en önemli ayrışma noktası.
+
+Oluşturulacak dosya:
+
+**`projects/cairn-datatable/src/lib/class-names.ts`**
 
 ```typescript
-readonly cellTemplates = contentChildren(NgDataTableCell);
-```
-
-Şablonda `ngTemplateOutlet` ile kullanılır. Eşleşen şablon yoksa varsayılan render devreye girer.
-
-### 6.4 Parça listesi
-
-Sınıf enjeksiyonu için tanımlı parçalar:
-
-```typescript
-export interface TableClassNames {
+export interface CairnClassNames {
   readonly root?: string;
-  readonly wrapper?: string;
-  readonly toolbar?: string;
-  readonly globalFilter?: string;
   readonly table?: string;
   readonly thead?: string;
   readonly headerRow?: string;
   readonly headerCell?: string;
+  readonly headerCellSorted?: string;
   readonly sortIcon?: string;
-  readonly columnFilter?: string;
   readonly tbody?: string;
   readonly row?: string;
+  readonly rowSelected?: string;
+  readonly rowEven?: string;
+  readonly rowOdd?: string;
   readonly cell?: string;
-  readonly selectionCell?: string;
-  readonly empty?: string;
-  readonly loading?: string;
-  readonly pagination?: string;
-  readonly paginationButton?: string;
-  readonly paginationInfo?: string;
+  readonly emptyRow?: string;
+  readonly emptyCell?: string;
+  readonly loadingRow?: string;
+  readonly loadingCell?: string;
 }
 ```
 
-### 6.5 Veri öznitelikleri
+Düzenlenecek dosyalar:
 
-Her elemana durum bilgisi veri özniteliği olarak yazılır. Kullanıcı isterse sınıf yerine bunlara tutunabilir.
+1. `projects/cairn-datatable/src/lib/data-table.ts` — girdi ekle: `readonly classNames = input<CairnClassNames>({});`
+2. `projects/cairn-datatable/src/lib/data-table.html` — her öğeye iki şey ekle, sabit sınıf ve kullanıcı sınıfı:
 
-1. `data-sorted` — başlık hücresinde, değeri `asc`, `desc` veya yok
-2. `data-sortable` — sıralanabilir başlıklarda
-3. `data-selected` — seçili satırlarda
-4. `data-row-index` — her satırda
-5. `data-column-id` — her hücrede
-6. `data-align` — hizalama değeri
+```html
+<th
+  class="cairn-header-cell"
+  [class]="classNames().headerCell"
+  [attr.data-column-id]="column.id"
+  [attr.data-sorted]="ariaSort(column)"
+>
+```
+
+3. `projects/cairn-datatable/src/public-api.ts` — `CairnClassNames` tipini dışa aktar.
+
+İki kural:
+
+1. Sabit `cairn-` önekli sınıfları asla kaldırma. Varsayılan stil dosyası onlara dayanacak.
+2. Veri özniteliklerini (`data-column-id`, `data-sorted`, `data-selected`) her zaman yaz. Kullanıcı bunlarla saf CSS seçicisi yazabilir, sınıf vermeye gerek kalmaz.
+
+Tamamlanma ölçütü: demo uygulamasında Tailwind sınıfları verildiğinde tablonun görünümü tamamen değişmeli ve kütüphanenin kendi stili hiçbir şeyi ezmemeli.
 
 ---
 
-## 7. Stil Katmanı
+## Adım 8 — Erişilebilirlik
 
-### 7.1 Dosya yapısı
+Amaç: klavye ile tam kullanım ve ekran okuyucu desteği. PRD'de pazarlık dışı olarak işaretlendi.
 
-Varsayılan stiller ayrı bir CSS dosyası olarak dağıtılır. Bileşenin kendi `styles` dizisi boştur.
+Düzenlenecek dosyalar:
 
-Kullanıcı isterse içe aktarır:
+1. `projects/cairn-datatable/src/lib/data-table.html`
 
-```css
-@import '@your-scope/datatable/styles.css';
-```
+Yapılacak beş değişiklik:
 
-İçe aktarmazsa tablo tamamen çıplak gelir.
+1. Başlık hücresindeki tıklamayı `<th>` üzerinden alıp içine koyduğun `<button type="button">` öğesine taşı. Böylece sekme ile odaklanabilir ve boşluk tuşuyla tetiklenir hâle gelir.
+2. `<th>` öğesine `scope="col"` ve `[attr.aria-sort]` ekle. `aria-sort` sadece `ascending`, `descending` veya `none` değerlerini alabilir.
+3. Seçim onay kutularına erişilebilir etiket ver: `[attr.aria-label]="'Select row ' + row.id"`.
+4. Tabloya `<caption>` ekle ve girdiyle doldurulabilir yap: `readonly caption = input<string>('')`. Boşsa `<caption>` öğesini hiç render etme.
+5. Yükleniyor durumunda tablo gövdesine `aria-busy="true"` ekle.
 
-### 7.2 Katman kullanımı
+2. `projects/cairn-datatable/src/lib/data-table.ts`
 
-Bütün varsayılan stiller tek bir katmana alınır:
-
-```css
-@layer ng-datatable {
-  .ngdt-table {
-    /* ... */
-  }
-  .ngdt-header-cell {
-    /* ... */
-  }
-}
-```
-
-Katman içindeki hiçbir kural birden fazla seçici kullanmaz ve hiçbirinde `!important` bulunmaz.
-
-### 7.3 CSS değişkenleri
-
-Tema için değişkenler tanımlanır. Kullanıcı sınıf ezmeden görünümü değiştirebilmelidir.
-
-```css
-@layer ng-datatable {
-  .ngdt-root {
-    --ngdt-border-color: #e2e8f0;
-    --ngdt-header-bg: #f8fafc;
-    --ngdt-row-hover-bg: #f1f5f9;
-    --ngdt-selected-bg: #e0f2fe;
-    --ngdt-row-height: 2.5rem;
-    --ngdt-cell-padding-x: 0.75rem;
-    --ngdt-cell-padding-y: 0.5rem;
-    --ngdt-font-size: 0.875rem;
-    --ngdt-radius: 0.375rem;
-  }
-}
-```
-
-### 7.4 Öncelik sırası
-
-Bir hücreye üç kaynaktan stil gelebilir. Öncelik sırası şudur, düşükten yükseğe:
-
-1. Varsayılan stil dosyası (katman içinde)
-2. Kullanıcının kendi CSS'i (katman dışında)
-3. `classNames` ile enjekte edilen sınıflar
-4. `rowClass` fonksiyonundan dönen sınıflar
-
----
-
-## 8. Erişilebilirlik Gereksinimleri
-
-1. Kök eleman `<table>` etiketi kullanır. `<div>` ızgarası kullanılmaz.
-2. Sıralanabilir başlık hücrelerinde `aria-sort` özniteliği bulunur. Değerleri `ascending`, `descending` veya `none`.
-3. Sıralama tetikleyicisi `<th>` içinde bir `<button>` elemanıdır. `<th>` üzerine tıklama olayı bağlanmaz.
-4. Satır seçimi onay kutusu (checkbox) ile yapılır ve `aria-label` içerir. Örnek: "Satır 3 seçili".
-5. Tümünü seç onay kutusu, kısmi seçim durumunda `indeterminate` özelliğine sahiptir.
-6. Sayfalama butonları `aria-label` içerir ve devre dışıyken `disabled` özniteliğine sahiptir.
-7. Sayfa değiştiğinde veya filtre uygulandığında sonuç sayısı `aria-live="polite"` bölgesinde duyurulur.
-8. Yükleniyor durumunda `aria-busy="true"` verilir.
-9. Boş durum mesajı `<td>` içinde `colspan` ile tam genişlikte gösterilir.
-10. Klavye ile tüm etkileşimli elemanlara `Tab` ile erişilebilir. Özel bir odak yönetimi kurulmaz, doğal sekme sırası yeterlidir.
-
----
-
-## 9. Test Gereksinimleri
-
-Test aracı Vitest kullanılır. Angular 21'den itibaren varsayılan test koşucusu budur.
-
-### 9.1 Çekirdek testleri
-
-Bunlar `TestBed` gerektirmez, saf birim testtir.
-
-1. Boş veriyle tablo oluşturma
-2. Tek sütun sıralama, üç durumlu döngü (artan, azalan, sırasız)
-3. Çoklu sütun sıralama, sıra korunumu
-4. `null` ve `undefined` değerlerin her iki yönde de sona gitmesi
-5. Global filtre uygulaması
-6. Sütun filtresi uygulaması
-7. Global ve sütun filtresinin birlikte çalışması
-8. Filtre değişince sayfa indeksinin sıfırlanması
-9. Sayfa sınırlarının aşılamaması
-10. Sayfa boyutu değişince sayfa sayısının yeniden hesaplanması
-11. Satır seçiminin veri değişse de kimlik üzerinden korunması
-12. Tümünü seç davranışının sadece mevcut sayfayı etkilemesi
-13. Sütun görünürlüğü kapatıldığında o sütunun filtresinin de devre dışı kalması
-14. Kaynak dizinin hiçbir işlemde değiştirilmediğinin doğrulanması
-15. `computed` önbelleğinin çalıştığının doğrulanması: sadece sayfa değişince sıralama fonksiyonunun tekrar çağrılmaması
-
-### 9.2 Bileşen testleri
-
-1. Veri ve sütunlarla render edilmesi
-2. Başlığa tıklayınca sıralamanın değişmesi
-3. `classNames` değerlerinin doğru parçalara uygulanması
-4. Özel hücre şablonunun varsayılanın yerine geçmesi
-5. Boş durumda boş mesajının görünmesi
-6. `aria-sort` özniteliğinin doğru değeri alması
-7. Dışarıdan verilen `table` örneğinin kullanılması
-8. Zonesiz ortamda güncellemelerin ekrana yansıması
-
-Zonesiz test için `fixture.whenStable()` kullanılır, `fixture.detectChanges()` kullanılmaz.
-
----
-
-## 10. npm Paketi Haline Getirme
-
-Bu bölüm ilk npm paketini yayınlayacağın için adım adım ve eksiksiz yazılmıştır.
-
-### 10.1 Ön hazırlık
-
-1. Node.js sürümünü kontrol et: `node -v`. Angular 21 için en az Node 20.19 gerekir.
-2. Angular CLI (Command Line Interface / Komut Satırı Arayüzü) kur veya güncelle: `npm install -g @angular/cli`
-3. Sürümü doğrula: `ng version`
-
-### 10.2 Çalışma alanı oluşturma
-
-Kütüphane projeleri, uygulama içermeyen bir çalışma alanında yaşar. Demo uygulamasını sonra ekleyeceğiz.
-
-1. Uygulamasız çalışma alanı oluştur: `ng new ngdt-workspace --no-create-application`
-2. Klasöre gir: `cd ngdt-workspace`
-3. Kütüphaneyi üret: `ng generate library ng-datatable`
-
-Bu komut şunları yapar:
-
-1. `projects/ng-datatable` klasörünü oluşturur
-2. `projects/ng-datatable/package.json` dosyasını oluşturur
-3. `projects/ng-datatable/ng-package.json` dosyasını oluşturur — bu, ng-packagr yapılandırmasıdır
-4. `angular.json` dosyasına yeni projeyi ekler
-5. Kök `tsconfig.json` dosyasına yol eşlemesi (path mapping) ekler
-
-### 10.3 Demo uygulaması ekleme
-
-Belgelendirme ve manuel test için gerekli.
-
-1. `ng generate application demo`
-2. Demo içinde kütüphaneyi yol eşlemesi üzerinden içe aktar: `import { DataTable } from 'ng-datatable';`
-
-Yol eşlemesi sayesinde `npm link` kurmadan doğrudan kaynak koddan çalışır.
-
-### 10.4 Paket adını belirleme
-
-İki seçenek var:
-
-1. **Kapsamsız ad:** `ng-datatable` gibi. npm üzerinde benzersiz olması gerekir, çoğu iyi ad alınmıştır.
-2. **Kapsamlı ad:** `@guneralkim/ng-datatable` gibi. Kullanıcı adının altında olur, çakışma riski yoktur.
-
-Kapsamlı adı öneriyorum. Kontrol için: `npm view @guneralkim/ng-datatable`. "404 Not Found" cevabı gelirse ad boştur.
-
-### 10.5 Kütüphane package.json dosyasını yapılandırma
-
-`projects/ng-datatable/package.json` dosyasını şu hale getir:
-
-```json
-{
-  "name": "@guneralkim/ng-datatable",
-  "version": "0.1.0",
-  "description": "Signal-based, zoneless datatable for Angular 21+ with zero runtime dependencies",
-  "keywords": ["angular", "datatable", "table", "data-grid", "signals", "zoneless", "headless"],
-  "license": "MIT",
-  "author": "Guner Kaan Alkim",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KULLANICI_ADIN/ng-datatable.git"
-  },
-  "bugs": {
-    "url": "https://github.com/KULLANICI_ADIN/ng-datatable/issues"
-  },
-  "homepage": "https://github.com/KULLANICI_ADIN/ng-datatable#readme",
-  "peerDependencies": {
-    "@angular/common": "^21.0.0 || ^22.0.0",
-    "@angular/core": "^21.0.0 || ^22.0.0"
-  },
-  "sideEffects": false
-}
-```
-
-Açıklamalar:
-
-1. `peerDependencies` kritiktir. Angular'ı bağımlılık olarak koyarsan kullanıcının projesine ikinci bir Angular kopyası iner ve her şey bozulur. Eşdeğer bağımlılık, "kullanıcının projesinde zaten bulunmalı" demektir.
-2. `dependencies` alanı hiç bulunmamalıdır. Sıfır bağımlılık sözümüz budur.
-3. `sideEffects: false`, paket toplayıcıların (bundler) kullanılmayan kodu atmasını sağlar.
-4. `version` alanını 0.1.0 ile başlat. 1.0.0'a ancak API'yi dondurmaya hazır olduğunda çık.
-5. `main`, `module`, `types`, `exports` alanlarını sen yazmıyorsun. ng-packagr bunları derleme sırasında otomatik ekliyor.
-
-### 10.6 İkinci giriş noktası oluşturma
-
-`@guneralkim/ng-datatable/core` şeklinde ayrı içe aktarma için ikincil giriş noktası (secondary entry point) gerekir.
-
-1. `projects/ng-datatable/core` klasörünü oluştur.
-2. İçine `ng-package.json` dosyası koy:
-
-```json
-{
-  "lib": {
-    "entryFile": "src/public-api.ts"
-  }
-}
-```
-
-3. `projects/ng-datatable/core/src/public-api.ts` dosyasını oluştur ve çekirdek dışa aktarımlarını buraya koy.
-4. Ana giriş noktasının `public-api.ts` dosyası da çekirdeği yeniden dışa aktarsın, böylece tek içe aktarmayla da erişilebilsin.
-
-Bu yapı sayesinde kullanıcı iki şekilde de kullanabilir:
+Klavye gezinme metodu ekle:
 
 ```typescript
-import { createTable } from '@guneralkim/ng-datatable/core';
-import { DataTable } from '@guneralkim/ng-datatable';
+protected onHeaderKeydown(event: KeyboardEvent, column: ColumnDef<T>): void
 ```
 
-### 10.7 Stil dosyasını pakete dahil etme
+Desteklenecek tuşlar: `Enter` ve `Space` sıralamayı değiştirir, `Escape` sıralamayı temizler.
 
-CSS dosyası TypeScript derleyicisinden geçmez, elle kopyalanması gerekir.
+Tamamlanma ölçütü: fareyi hiç kullanmadan sekme ile tüm başlıklara ulaşıp sıralama yapabilmelisin.
 
-1. Stil dosyasını `projects/ng-datatable/styles/datatable.css` yoluna koy.
-2. `projects/ng-datatable/ng-package.json` dosyasına varlık kopyalama kuralı ekle:
+---
 
-```json
-{
-  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/ng-datatable",
-  "assets": ["./styles/**/*.css"],
-  "lib": {
-    "entryFile": "src/public-api.ts"
+## Adım 9 — Varsayılan stil dosyası
+
+Oluşturulacak dosya:
+
+**`projects/cairn-datatable/styles/cairn-datatable.css`**
+
+Yazım kuralları:
+
+1. Tüm kurallar `@layer cairn { ... }` bloğunun içine alınacak. Bu sayede kullanıcının kendi stilleri, özgüllük savaşına girmeden kütüphane stillerini ezer.
+2. Renkler doğrudan yazılmayacak, özel özellik (custom property) üzerinden verilecek:
+
+```css
+@layer cairn {
+  .cairn-table {
+    --cairn-border: #e5e7eb;
+    --cairn-header-bg: #f9fafb;
+    --cairn-row-hover: #f3f4f6;
+    --cairn-text: #111827;
+
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--cairn-text);
   }
 }
 ```
 
-3. Derlemeden sonra `dist/ng-datatable/styles/datatable.css` dosyasının oluştuğunu doğrula.
+3. Karanlık tema için `@media (prefers-color-scheme: dark)` bloğu ekle, sadece özel özellikleri değiştir.
+4. Hiçbir yazı tipi ailesi tanımlama. Uygulamanınkini miras alsın.
 
-### 10.8 Dosyaları hazırlama
+Düzenlenecek dosyalar:
 
-1. `projects/ng-datatable/README.md` dosyasını oluştur. npm sayfasında görünecek olan budur, kök dizindeki README değil.
-2. `projects/ng-datatable/LICENSE` dosyasını oluştur. MIT lisans metnini https://opensource.org/license/mit adresinden al, yıl ve isim alanlarını doldur.
-3. Kök dizinde `.npmignore` dosyasına ihtiyaç yok. ng-packagr sadece derleme çıktısını `dist` klasörüne koyar, o klasörü yayınlıyoruz.
+1. `projects/cairn-datatable/ng-package.json` — `"assets": ["./styles/**/*.css"]` girişinin var olduğunu doğrula.
+2. `projects/cairn-datatable/package.json` — `sideEffects` alanını `false` yerine `["**/*.css"]` yap. Bunu yapmazsan bazı paketleyiciler stil dosyasını çıktıdan siler.
 
-### 10.9 Derleme
+Kullanıcının içe aktarma biçimi şu olacak, README'de böyle yaz:
 
-1. Kütüphaneyi derle: `ng build ng-datatable`
-2. Çıktı `dist/ng-datatable` klasöründe oluşur.
-3. Çıktının içeriğini kontrol et: `ls -R dist/ng-datatable`
-4. Şunların var olduğunu doğrula: `package.json`, `README.md`, `LICENSE`, `index.d.ts`, `fesm2022` klasörü, `core` klasörü, `styles` klasörü.
-5. Oluşan `package.json` dosyasını aç ve `exports` alanının hem `.` hem `./core` girişlerini içerdiğini doğrula.
+```css
+@import '@guneralkim/cairn-datatable/styles/cairn-datatable.css';
+```
 
-### 10.10 Yayınlamadan önce yerel test
+Tamamlanma ölçütü: derlemeden sonra `dist/cairn-datatable/styles/cairn-datatable.css` dosyası oluşmalı.
 
-Bu adımı atlama. Paket yayınlandıktan sonra aynı sürüm numarasıyla düzeltme yapamazsın.
+---
 
-Yöntem 1 — paketleme ile test:
+## Adım 10 — Demo uygulaması ve dört örnek
 
-1. `cd dist/ng-datatable`
-2. `npm pack`
-3. Bu komut `guneralkim-ng-datatable-0.1.0.tgz` dosyası üretir.
-4. Ayrı bir klasörde yeni bir Angular uygulaması oluştur: `ng new test-app`
-5. Sıkıştırılmış dosyayı kur: `npm install /tam/yol/guneralkim-ng-datatable-0.1.0.tgz`
-6. Bileşeni içe aktar ve çalıştığını doğrula.
+Oluşturulacak paylaşılan dosyalar:
 
-Bu yöntem `npm link` yönteminden daha güvenilirdir, çünkü gerçek kurulum sürecini birebir taklit eder. `npm link` Angular projelerinde ikili Angular örneği hatasına yol açabilir.
+1. `projects/cairn-demo/src/app/shared/sample-data.ts` — en az elli satırlık örnek veri ve sütun tanımları. Sayfalamanın görünmesi için elli satır şart, üç satırla sayfalama örneği gösteremezsin.
+2. `projects/cairn-demo/src/app/shared/example-shell.ts` — her örneğin etrafını saran, başlık ve kaynak kod gösteren kabuk bileşen.
+
+Oluşturulacak örnek dosyaları:
+
+1. `projects/cairn-demo/src/app/examples/basic/basic-example.ts` ve `.html` — hiç stil verilmeden, çıplak kullanım.
+2. `projects/cairn-demo/src/app/examples/styled/styled-example.ts` ve `.html` — varsayılan stil dosyası içe aktarılmış hâli.
+3. `projects/cairn-demo/src/app/examples/tailwind/tailwind-example.ts` ve `.html` — `classNames` girdisiyle tamamen Tailwind sınıflarıyla giydirilmiş hâli.
+4. `projects/cairn-demo/src/app/examples/headless/headless-example.ts` ve `.html` — bileşen hiç kullanılmadan, sadece `createTable` ile yazılmış tamamen özel tablo.
+
+Dördüncü örnek en önemlisi. İki katmanlı mimarinin değerini kanıtlayan tek şey o. Atlamayı düşünme.
+
+Düzenlenecek dosyalar:
+
+1. `projects/cairn-demo/src/app/app.routes.ts` — dört örneğe yönlendirme tanımla.
+2. `projects/cairn-demo/src/app/app.html` — örnekler arasında gezinme bağlantıları.
+3. `projects/cairn-demo/src/styles.css` — Tailwind yönergelerini ve kütüphane stil içe aktarmasını ekle.
+
+Tamamlanma ölçütü: `ng serve cairn-demo` ile dört örneğin dördü de çalışmalı.
+
+---
+
+## Adım 11 — Bileşen testleri
+
+Oluşturulacak dosya:
+
+**`projects/cairn-datatable/src/lib/data-table.spec.ts`**
+
+PRD bölüm 9.2'deki sekiz maddeyi bu tek dosyada topla. Bileşen testleri çekirdek testlerinden farklı olarak `TestBed` gerektirir.
+
+Zonesiz test için kritik kural: `fixture.detectChanges()` kullanma, `await fixture.whenStable()` kullan. Test kurulumunda zonesiz sağlayıcıyı ekle:
+
+```typescript
+TestBed.configureTestingModule({
+  imports: [DataTable],
+  providers: [provideZonelessChangeDetection()],
+});
+```
+
+Bu satırı unutursan testler geçer ama gerçek zonesiz uygulamada bileşen çalışmaz. Yanlış güven vermiş olursun.
+
+Tamamlanma ölçütü: `ng test cairn-datatable` komutunda toplam yirmi üç test geçmeli.
+
+---
+
+## Adım 12 — README ve demo sitesi
+
+Oluşturulacak veya düzenlenecek dosyalar:
+
+1. `projects/cairn-datatable/README.md` — npm paket sayfasında görünen dosya budur. PRD bölüm 11.1'deki on bir maddelik sırayı birebir uygula.
+2. `cairn-workspace/README.md` — depo kökündeki dosya. Bu, tüm `cairn` ailesini tanıtır, tek bir paketi değil. Her pakete bir satır açıklama ve bağlantı ver.
+3. `cairn-workspace/CONTRIBUTING.md` — katkı rehberi.
+4. `cairn-workspace/.github/ISSUE_TEMPLATE/bug_report.md` ve `feature_request.md` — sorun şablonları.
+5. `cairn-workspace/.github/workflows/deploy-demo.yml` — demo sitesini GitHub Pages üzerine yayınlayan iş akışı.
+
+README için üç uyarı:
+
+1. Demo GIF veya ekran görüntüsünü atlama. Yıldız ilk ekranda kazanılıyor.
+2. Kurulum komutundan sonraki ilk örnek en fazla on beş satır olsun. Uzun örnek okuyucuyu kaçırır.
+3. Yol haritası bölümünde v1 dışında bıraktıklarını açıkça listele. Eksiklik gibi değil, bilinçli kapsam gibi görünür.
+
+Demo sitesi yayını için `ng build cairn-demo --base-href /cairn/` komutunu kullan. Depo adı `cairn` olduğu için temel yol bu olmalı, yoksa varlıklar yüklenmez.
+
+---
+
+## Adım 13 — Yayın öncesi yerel test
+
+Bu adım çalışma alanının **dışında** yapılır. `npm link` kullanma, Angular projelerinde ikili örnek hatası üretir.
+
+Sıra:
+
+1. `ng build cairn-datatable`
+2. `cd dist/cairn-datatable`
+3. `npm pack` — bu komut `guneralkim-cairn-datatable-0.1.0.tgz` dosyası üretir.
+4. Tamamen ayrı bir klasöre çık: `cd ~/Documents/Development`
+5. `ng new cairn-smoke-test --style=css`
+6. `cd cairn-smoke-test`
+7. `npm install ~/Documents/Development/cairn-workspace/dist/cairn-datatable/guneralkim-cairn-datatable-0.1.0.tgz`
+8. Bileşeni içe aktar, basit bir tablo yaz, `ng serve` ile çalıştır.
 
 Kontrol listesi:
 
 1. Bileşen render ediliyor mu?
-2. `@guneralkim/ng-datatable/core` içe aktarması çalışıyor mu?
-3. Stil dosyası içe aktarılabiliyor mu?
-4. TypeScript tip tamamlaması çalışıyor mu?
+2. `@guneralkim/cairn-datatable/core` içe aktarması çalışıyor mu?
+3. Stil dosyası `@import` ile yüklenebiliyor mu?
+4. Tip tamamlaması çalışıyor mu?
 5. Derlemede uyarı var mı?
+6. `node_modules` içinde `tslib` kurulmuş mu? Kurulmuşsa `importHelpers` ayarı çalışmamış demektir.
 
-### 10.11 npm hesabı oluşturma
-
-1. https://www.npmjs.com/signup adresinden hesap aç.
-2. E-posta adresini doğrula. Doğrulanmamış hesap paket yayınlayamaz.
-3. İki aşamalı doğrulamayı (2FA / Two-Factor Authentication / İki Faktörlü Kimlik Doğrulama) etkinleştir: https://www.npmjs.com/settings/~/profile — bu artık yayınlama için zorunludur.
-4. Terminalden giriş yap: `npm login`
-5. Girişi doğrula: `npm whoami`
-
-### 10.12 İlk yayın
-
-1. Derleme çıktısı klasörüne gir: `cd dist/ng-datatable`
-2. Ne yayınlanacağını önce gör: `npm publish --dry-run`
-3. Çıktıdaki dosya listesini oku. Beklemediğin bir dosya varsa dur ve düzelt.
-4. Yayınla: `npm publish --access public`
-
-Önemli: kapsamlı paketler (`@kullanici/paket` biçimindekiler) varsayılan olarak özel (private) kabul edilir ve ücretli plan ister. `--access public` bayrağı olmadan yayınlarsan hata alırsın.
-
-5. Yayını doğrula: `npm view @guneralkim/ng-datatable`
-6. Sayfayı ziyaret et: `https://www.npmjs.com/package/@guneralkim/ng-datatable`
-
-### 10.13 Sürüm yönetimi
-
-Anlamsal sürümleme (SemVer / Semantic Versioning) kurallarına uy:
-
-1. Yama (patch), örneğin 0.1.0 → 0.1.1: sadece hata düzeltmesi.
-2. Küçük (minor), örneğin 0.1.0 → 0.2.0: geriye uyumlu yeni özellik.
-3. Büyük (major), örneğin 0.9.0 → 1.0.0: kırıcı değişiklik.
-
-Sürüm numarasını elle değiştirme, komutla yükselt. Kütüphane klasöründe:
-
-1. `cd projects/ng-datatable`
-2. `npm version patch` veya `npm version minor`
-3. Kök klasöre dön ve yeniden derle: `ng build ng-datatable`
-4. `cd dist/ng-datatable && npm publish --access public`
-
-Uyarı: 1.0.0 öncesinde (0.x sürümlerinde) SemVer kuralları gevşek kabul edilir, yani küçük sürüm artışında da kırıcı değişiklik yapabilirsin. Bu, API'yi olgunlaştırmak için sana alan tanır. 1.0.0'a çıkmak için acele etme.
-
-### 10.14 Yanlış yayın durumunda ne yapılır
-
-1. Yayından 72 saat geçmediyse geri çekebilirsin: `npm unpublish @guneralkim/ng-datatable@0.1.0`
-2. 72 saat geçtiyse geri çekemezsin. Bunun yerine kullanımdan kaldırılmış olarak işaretle: `npm deprecate @guneralkim/ng-datatable@0.1.0 "Bu surumde hata var, 0.1.1 kullanin"`
-3. Silinen sürüm numarası bir daha kullanılamaz. Doğrudan bir sonraki numaraya geç.
-
-Bu yüzden 10.10 adımındaki yerel test kritiktir.
-
-### 10.15 Otomatik yayın (isteğe bağlı, sonraya bırakılabilir)
-
-GitHub Actions ile etiket (tag) atıldığında otomatik yayın kurabilirsin.
-
-1. npm üzerinde otomasyon jetonu (automation token) oluştur: https://www.npmjs.com/settings/~/tokens — türü "Automation" olmalı, çünkü bu tür 2FA istemez.
-2. Jetonu GitHub deposunda gizli değişken olarak sakla: depo ayarlarında Secrets and variables bölümüne `NPM_TOKEN` adıyla ekle.
-3. `.github/workflows/publish.yml` dosyasını oluştur ve `npm publish --provenance --access public` komutunu çalıştır.
-
-`--provenance` bayrağı, paketin hangi kaynak koddan ve hangi iş akışından üretildiğini kriptografik olarak kanıtlar. npm sayfasında doğrulanmış rozet gösterir. Yeni bir paket için güven sinyali olarak değerlidir.
+Bu test klasörünü sonradan sil, deponun içine koyma.
 
 ---
 
-## 11. Belgelendirme Gereksinimleri
+## Adım 14 — 0.1.0 sürümünü yayınlama
 
-### 11.1 README yapısı
+Ön koşullar:
 
-Sıralama önemlidir. Yıldız, ilk ekranda kazanılır.
+1. npm hesabı açılmış ve e-posta doğrulanmış olmalı.
+2. İki aşamalı doğrulama (2FA / Two-Factor Authentication / İki Faktörlü Kimlik Doğrulama) etkin olmalı.
+3. `npm login` yapılmış olmalı, `npm whoami` doğru kullanıcıyı göstermeli.
 
-1. Paket adı ve tek cümlelik tanım
-2. Rozetler: npm sürümü, paket boyutu, lisans
-3. Demo GIF veya ekran görüntüsü — bu maddeyi atlama
-4. Kurulum komutu
-5. Otuz saniyede çalışan en küçük örnek
-6. Özellik listesi, madde madde
-7. Neden bu kütüphane bölümü: TanStack, AG Grid ve PrimeNG ile farkın
-8. Özelleştirme örnekleri: `classNames` ve `ng-template` kullanımı
-9. API referansı
-10. Yol haritası — v1 dışında bıraktıklarını burada listele
-11. Lisans
+Sıra:
 
-### 11.2 Demo sitesi
+1. `projects/cairn-datatable/package.json` dosyasında sürümü `0.1.0` yap.
+2. `ng build cairn-datatable`
+3. `cd dist/cairn-datatable`
+4. `npm publish --dry-run` — çıktıdaki dosya listesini satır satır oku. Beklemediğin bir dosya varsa dur.
+5. `npm publish --access public`
 
-Yayın günü için hazır olmalı. GitHub Pages üzerinde barındır. En az dört örnek içersin:
+`--access public` bayrağı zorunludur. Kapsamlı paketler varsayılan olarak özel kabul edilir ve ücretli plan ister.
 
-1. Temel kullanım, hiç stil verilmeden
-2. Varsayılan stille kullanım
-3. Tailwind ile `classNames` üzerinden tamamen özelleştirilmiş görünüm
-4. Sadece çekirdek API ile yazılmış tamamen özel tablo
+Yayın sonrası doğrulama:
 
-Dördüncüsü özellikle önemli, çünkü iki katmanlı yapının değerini kanıtlayan tek şey odur.
+1. `npm view @guneralkim/cairn-datatable`
+2. `https://www.npmjs.com/package/@guneralkim/cairn-datatable` sayfasını aç, README ve lisansın göründüğünü doğrula.
 
----
+Otomatik yayın kurmak istersen oluşturulacak dosya:
 
-## 12. Geliştirme Sırası
+**`cairn-workspace/.github/workflows/publish.yml`**
 
-Kendin başlayıp Gemini ile devam edeceğin için sıra şöyle olmalı:
-
-1. Çalışma alanını ve kütüphane iskeletini kur (bölüm 10.2 ve 10.3)
-2. Tip tanımlarını yaz: `ColumnDef`, `TableOptions`, `TableApi`, `SortState` — bu adımı kendin yap, çünkü geri kalan her şey buna bağlı
-3. `createTable` fabrikasını ve türetme zincirini yaz
-4. Çekirdek birim testlerini yaz
-5. Bileşenin iskeletini ve şablonunu yaz
-6. Şablon direktiflerini ekle
-7. Sınıf enjeksiyonunu ve veri özniteliklerini ekle
-8. Erişilebilirlik özniteliklerini ekle
-9. Varsayılan stil dosyasını yaz
-10. Demo uygulamasını ve dört örneği hazırla
-11. Bileşen testlerini yaz
-12. README ve demo sitesini hazırla
-13. Yerel test yap (bölüm 10.10)
-14. 0.1.0 sürümünü yayınla
-
-İkinci ve üçüncü adımları kendin yazman en doğrusu. API tasarımı geri dönüşü en pahalı karardır ve mimarinin tamamını belirler.
+İçinde `npm publish --provenance --access public` komutu çalışacak. `NPM_TOKEN` gizli değişkenini depo ayarlarından ekle, jeton türü Automation olmalı çünkü o tür iki aşamalı doğrulama istemez.
 
 ---
 
-## 13. Yayın Günü Kontrol Listesi
+## Ek: Gemini'ye devrederken vereceğin talimatlar
 
-1. README hazır ve içinde demo GIF var mı?
-2. Demo sitesi yayında ve çalışıyor mu?
-3. npm paketi yayınlandı ve temiz bir projede kurulup test edildi mi?
-4. GitHub deposunda açıklama, konu etiketleri (topics) ve web sitesi bağlantısı dolduruldu mu?
-5. Konu etiketleri eklendi mi: `angular`, `datatable`, `signals`, `zoneless`, `data-grid`
-6. Lisans dosyası hem depoda hem pakette var mı?
-7. Katkı rehberi (CONTRIBUTING.md) ve sorun şablonları eklendi mi?
+Kod üretimini devrettiğinde şu altı kuralı açıkça yaz, yoksa dosya yapısını bozar:
+
+1. Dosya adlarında `.component.ts` ve `.service.ts` son ekleri kullanılmayacak. Angular 20 stil rehberi bunları kaldırdı.
+2. Kod içindeki yorum satırları İngilizce yazılacak.
+3. `*ngIf` ve `*ngFor` kullanılmayacak, yerleşik akış denetimi (`@if`, `@for`) kullanılacak.
+4. `CommonModule` içe aktarılmayacak, gereken direktifler tek tek alınacak.
+5. Hiçbir dosyada `zone.js` referansı olmayacak.
+6. `internal/` klasöründeki hiçbir sembol genel arayüzden dışa aktarılmayacak.

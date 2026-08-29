@@ -1,12 +1,22 @@
 {
-  "name": "cairn-datatable",
-  "version": "0.0.1",
+  "name": "@guneralkim/cairn-datatable",
+  "version": "0.1.0",
+  "description": "Signal-based, zoneless datatable for Angular 21+ with zero runtime dependencies",
+  "keywords": ["angular", "datatable", "table", "data-grid", "signals", "zoneless", "headless"],
+  "license": "MIT",
+  "author": "Guner Kaan Alkim",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gunerkaanalkim/cairn.git",
+    "directory": "projects/cairn-datatable"
+  },
+  "bugs": {
+    "url": "https://github.com/gunerkaanalkim/cairn/issues"
+  },
+  "homepage": "https://github.com/gunerkaanalkim/cairn",
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/common": "^21.0.0 || ^22.0.0",
+    "@angular/core": "^21.0.0 || ^22.0.0"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
-  },
-  "sideEffects": false
+  "sideEffects": ["**/*.css"]
 }

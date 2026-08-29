@@ -1,3 +1,2 @@
-/* You can add global styles to this file, and also import other style files */
-
-@import 'tailwindcss';
+/* In an actual app this would be: @import '@guneralkim/cairn-datatable/styles/cairn-datatable.css'; */
+@import '../../../dist/cairn-datatable/styles/cairn-datatable.css';

@@ -1,5 +1,7 @@
-/*
- * Public API Surface of cairn-datatable
- */
-
-export * from './lib/cairn-datatable';
+export * from './lib/data-table';
+export * from './lib/directives/cell-template';
+export * from './lib/directives/header-template';
+export * from './lib/directives/empty-template';
+export * from './lib/directives/loading-template';
+export * from '@guneralkim/cairn-datatable/core';
+export * from './lib/class-names';

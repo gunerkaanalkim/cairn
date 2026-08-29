@@ -1,0 +1,51 @@
+@layer cairn {
+  .cairn-table {
+    --cairn-border: #e5e7eb;
+    --cairn-header-bg: #f9fafb;
+    --cairn-row-hover: #f3f4f6;
+    --cairn-text: #111827;
+    --cairn-bg: #ffffff;
+
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--cairn-text);
+    background: var(--cairn-bg);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .cairn-table {
+      --cairn-border: #374151;
+      --cairn-header-bg: #1f2937;
+      --cairn-row-hover: #374151;
+      --cairn-text: #f9fafb;
+      --cairn-bg: #111827;
+    }
+  }
+
+  .cairn-header-cell, .cairn-cell {
+    border-bottom: 1px solid var(--cairn-border);
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .cairn-header-cell {
+    background: var(--cairn-header-bg);
+    font-weight: 600;
+  }
+
+  .cairn-header-button {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cairn-row:hover {
+    background: var(--cairn-row-hover);
+  }
+}

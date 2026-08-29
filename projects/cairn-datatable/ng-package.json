@@ -3,5 +3,8 @@
   "dest": "../../dist/cairn-datatable",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    "./styles/**/*.css"
+  ]
 }
