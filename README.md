@@ -1,59 +1,49 @@
-# CairnWorkspace
+# Cairn
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.22.
+Cairn is a collection of modern, signal-based Angular components and utilities. It focuses on zero-dependency, headless-capable designs that seamlessly integrate with the latest Angular features.
 
-## Development server
+## Live Demo
 
-To start a local development server, run:
+A live demo of the packages is available at: [https://gunerkaanalkim.github.io/cairn/](https://gunerkaanalkim.github.io/cairn/)
 
-```bash
-ng serve
-```
+## Packages
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- [**@gunerkaanalkim/cairn-datatable**](./projects/cairn-datatable): A signal-based, zoneless datatable for Angular 21+. ([npm](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable))
 
-## Code scaffolding
+## Local Development
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/gunerkaanalkim/cairn.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm ci
+   ```
+3. Build the library:
+   ```bash
+   npm run build:lib
+   ```
+4. Serve the demo application:
+   ```bash
+   npx ng serve cairn-demo
+   ```
 
-```bash
-ng generate component component-name
-```
+**Note:** The demo application relies on the compiled library in the `dist` folder via path mapping. You must run `npm run build:lib` before serving the demo, otherwise it will fail to compile.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Commands
 
-```bash
-ng generate --help
-```
+- `npm run build:lib`: Builds the `cairn-datatable` library into the `dist` folder.
+- `npm run test:lib`: Runs unit tests for the library.
+- `npm run verify`: Runs a full verification pipeline (builds the library, runs tests, and builds the demo).
 
-## Building
+## Repository Structure
 
-To build the project run:
+- `projects/cairn-datatable`: The source code for the `@gunerkaanalkim/cairn-datatable` library.
+- `projects/cairn-demo`: An Angular application demonstrating how to use the library.
 
-```bash
-ng build
-```
+## Contributing and License
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Please read our [Contributing Guide](CONTRIBUTING.md) if you want to contribute.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This repository is licensed under the MIT License.

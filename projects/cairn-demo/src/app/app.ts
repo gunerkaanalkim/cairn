@@ -1,13 +1,15 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { CairnDatatable } from 'cairn-datatable';
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CairnDatatable],
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styles: [`
+    .active { font-weight: bold; }
+  `]
 })
 export class App {
-  protected readonly title = signal('cairn-demo');
+  title = 'cairn-demo';
 }

@@ -37,6 +37,12 @@
           }
         }
       }
+    },
+    {
+      "label": "build lib",
+      "type": "shell",
+      "command": "npx ng build cairn-datatable --watch",
+      "problemMatcher": []
     }
   ]
 }

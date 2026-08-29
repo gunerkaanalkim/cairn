@@ -1,0 +1,125 @@
+<table class="cairn-table" [class]="classNames().table || ''">
+  @if (caption()) {
+    <caption>{{ caption() }}</caption>
+  }
+  <thead class="cairn-thead" [class]="classNames().thead || ''">
+    <tr class="cairn-header-row" [class]="classNames().headerRow || ''">
+      @if (selectable()) {
+        <th class="cairn-selection-header-cell" [class]="classNames().selectionHeaderCell || ''" scope="col">
+          <input
+            type="checkbox"
+            [checked]="table().allPageRowsSelected()"
+            [indeterminate]="table().somePageRowsSelected()"
+            (change)="table().toggleAllPageRows()"
+            aria-label="Select all rows on this page"
+          />
+        </th>
+      }
+      @for (column of table().visibleColumns(); track column.id) {
+        <th
+          class="cairn-header-cell"
+          [class]="classNames().headerCell || ''"
+          [class.cairn-header-cell-sorted]="ariaSort(column) !== 'none'"
+          [ngClass]="ariaSort(column) !== 'none' ? classNames().headerCellSorted : ''"
+          [attr.data-column-id]="column.id"
+          [attr.data-sorted]="ariaSort(column)"
+          [attr.data-align]="column.align || 'start'"
+          scope="col"
+          [attr.aria-sort]="ariaSort(column)"
+        >
+          @if (column.sortable !== false) {
+            <button
+              type="button"
+              class="cairn-header-button"
+              (click)="table().toggleSort(column.id, $event.shiftKey)"
+              (keydown)="onHeaderKeydown($event, column)"
+            >
+              @if (headerTemplateFor(column.id); as ht) {
+                <ng-container *ngTemplateOutlet="ht; context: { $implicit: column }" />
+              } @else {
+                {{ column.header }}
+              }
+              @if (ariaSort(column) === 'ascending') {
+                <span class="cairn-sort-icon" [class]="classNames().sortIcon || ''">↑</span>
+              }
+              @if (ariaSort(column) === 'descending') {
+                <span class="cairn-sort-icon" [class]="classNames().sortIcon || ''">↓</span>
+              }
+            </button>
+          } @else {
+            @if (headerTemplateFor(column.id); as ht) {
+              <ng-container *ngTemplateOutlet="ht; context: { $implicit: column }" />
+            } @else {
+              {{ column.header }}
+            }
+          }
+        </th>
+      }
+    </tr>
+  </thead>
+  <tbody class="cairn-tbody" [class]="classNames().tbody || ''" [attr.aria-busy]="loading() ? 'true' : null">
+    @if (loading()) {
+      <tr class="cairn-loading-row" [class]="classNames().loadingRow || ''">
+        <td class="cairn-loading-cell" [class]="classNames().loadingCell || ''" [attr.colspan]="columnSpan">
+          @if (loadingTemplate(); as lt) {
+            <ng-container *ngTemplateOutlet="lt.templateRef" />
+          } @else {
+            Loading...
+          }
+        </td>
+      </tr>
+    } @else {
+      @for (row of table().rows(); track row.id; let i = $index) {
+        <tr
+          class="cairn-row"
+          [class]="classNames().row || ''"
+          [ngClass]="[
+            row.selected ? classNames().rowSelected || '' : '',
+            i % 2 === 0 ? classNames().rowEven || '' : classNames().rowOdd || ''
+          ]"
+          [class.cairn-row-selected]="row.selected"
+          [class.cairn-row-even]="i % 2 === 0"
+          [class.cairn-row-odd]="i % 2 !== 0"
+          [attr.data-selected]="row.selected"
+        >
+          @if (selectable()) {
+            <td class="cairn-selection-cell" [class]="classNames().selectionCell || ''">
+              <input
+                type="checkbox"
+                [checked]="row.selected"
+                (change)="table().toggleRowSelection(row.id)"
+                (click)="$event.stopPropagation()"
+                [attr.aria-label]="'Select row ' + row.id"
+              />
+            </td>
+          }
+          @for (column of table().visibleColumns(); track column.id) {
+            <td
+              class="cairn-cell"
+              [class]="classNames().cell || ''"
+              [attr.data-column-id]="column.id"
+              [attr.data-align]="column.align || 'start'"
+            >
+              @if (cellTemplateFor(column.id); as tpl) {
+                <ng-container *ngTemplateOutlet="tpl; context: cellContext(row, column)" />
+              } @else {
+                {{ table().cellText(row, column.id) }}
+              }
+            </td>
+          }
+        </tr>
+      }
+      @if (table().isEmpty()) {
+        <tr class="cairn-empty-row" [class]="classNames().emptyRow || ''">
+          <td class="cairn-empty-cell" [class]="classNames().emptyCell || ''" [attr.colspan]="columnSpan">
+            @if (emptyTemplate(); as et) {
+              <ng-container *ngTemplateOutlet="et.templateRef" />
+            } @else {
+              {{ emptyMessage() }}
+            }
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
