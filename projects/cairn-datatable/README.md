@@ -2,7 +2,7 @@
 
 A signal-based, zoneless datatable for Angular 21+ with zero runtime dependencies.
 
-[![npm version](https://img.shields.io/npm/v/@gunerkaanalkim/cairn-datatable)](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable) [![License](https://img.shields.io/npm/l/@gunerkaanalkim/cairn-datatable)](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable) [![Minzipped Size](https://img.shields.io/bundlephobia/minzip/@gunerkaanalkim/cairn-datatable)](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable)
+[![npm version](https://img.shields.io/npm/v/@gunerkaanalkim/cairn-datatable)](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable) [![License](https://img.shields.io/npm/l/@gunerkaanalkim/cairn-datatable)](https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable)
 
 **Live Demo:** [https://gunerkaanalkim.github.io/cairn/](https://gunerkaanalkim.github.io/cairn/)
 
@@ -187,6 +187,6 @@ V1 exclusions (not supported in current version):
 
 V2 will include row spanning.
 
-Please read our [CONTRIBUTING.md](../../CONTRIBUTING.md) if you want to contribute.
+Please read our [CONTRIBUTING.md](https://github.com/gunerkaanalkim/cairn/blob/main/CONTRIBUTING.md) if you want to contribute.
 
 This project is licensed under the MIT License.
