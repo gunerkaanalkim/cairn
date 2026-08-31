@@ -1,6 +1,9 @@
 {
   "name": "cairn-workspace",
   "version": "0.0.0",
+  "workspaces": [
+    "projects/*"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
