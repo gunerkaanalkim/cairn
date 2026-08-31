@@ -1,9 +1,118 @@
-<div style="display: flex; gap: 1rem; padding: 1rem; border-bottom: 1px solid #ccc;">
-  <a routerLink="/basic" routerLinkActive="active">Basic</a>
-  <a routerLink="/styled" routerLinkActive="active">Styled</a>
-  <a routerLink="/tailwind" routerLinkActive="active">Tailwind</a>
-  <a routerLink="/headless" routerLinkActive="active">Headless</a>
-</div>
-<div style="padding: 1rem;">
-  <router-outlet></router-outlet>
+<div class="min-h-screen bg-white dark:bg-zinc-950">
+  <a
+    href="#main-content"
+    class="focus-ring sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white"
+  >
+    Skip to content
+  </a>
+
+  <header
+    class="sticky top-0 z-40 border-b border-zinc-200 bg-white/85 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/85"
+  >
+    <div class="flex h-16 items-center gap-4 px-4 sm:px-6">
+      <button
+        type="button"
+        class="focus-ring rounded-md p-2 text-zinc-500 hover:bg-zinc-100 lg:hidden dark:text-zinc-400 dark:hover:bg-zinc-800"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="docs-sidebar"
+        aria-label="Toggle navigation"
+        (click)="menuOpen.set(!menuOpen())"
+      >
+        <svg viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+          <path d="M3 5h14v2H3zM3 9h14v2H3zM3 13h14v2H3z" />
+        </svg>
+      </button>
+
+      <a routerLink="/introduction" class="focus-ring flex items-center gap-2.5">
+        <span
+          class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 font-mono text-sm font-bold text-white"
+        >
+          C
+        </span>
+        <span class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Cairn DataTable
+        </span>
+      </a>
+
+      <span
+        class="hidden rounded-full border border-zinc-200 px-2 py-0.5 font-mono text-xs text-zinc-500 sm:inline dark:border-zinc-800 dark:text-zinc-400"
+      >
+        v0.1.1
+      </span>
+
+      <div class="ml-auto flex items-center gap-1">
+        <a
+          href="https://www.npmjs.com/package/@gunerkaanalkim/cairn-datatable"
+          target="_blank"
+          rel="noreferrer"
+          class="focus-ring rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+        >
+          npm
+        </a>
+        <a
+          href="https://github.com/gunerkaanalkim/cairn"
+          target="_blank"
+          rel="noreferrer"
+          class="focus-ring rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+        >
+          GitHub
+        </a>
+        <button
+          type="button"
+          class="focus-ring rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+          (click)="theme.toggle()"
+        >
+          @if (theme.isDark()) {
+            <svg viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+              <path
+                d="M10 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7-4a1 1 0 0 1-1 1h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 1 1ZM5 10a1 1 0 0 1-1 1H3a1 1 0 1 1 0-2h1a1 1 0 0 1 1 1Zm10.07-5.07a1 1 0 0 1 0 1.41l-.7.71a1 1 0 1 1-1.42-1.42l.71-.7a1 1 0 0 1 1.41 0ZM7.05 12.95a1 1 0 0 1 0 1.41l-.71.71a1 1 0 0 1-1.41-1.42l.7-.7a1 1 0 0 1 1.42 0Zm8.02 2.12a1 1 0 0 1-1.41 0l-.71-.71a1 1 0 0 1 1.42-1.41l.7.7a1 1 0 0 1 0 1.42ZM6.34 4.93a1 1 0 0 1 0 1.42 1 1 0 0 1-1.41 0l-.71-.71a1 1 0 0 1 1.41-1.41ZM10 16a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1Z"
+              />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+              <path d="M17 12.3A7.5 7.5 0 0 1 7.7 3 7.5 7.5 0 1 0 17 12.3Z" />
+            </svg>
+          }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mx-auto flex w-full max-w-[1400px]">
+    <aside
+      id="docs-sidebar"
+      class="fixed inset-x-0 top-16 z-30 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-zinc-200 bg-white px-4 py-6 lg:sticky lg:top-16 lg:block lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r lg:px-6 dark:border-zinc-800 dark:bg-zinc-950"
+      [class.hidden]="!menuOpen()"
+    >
+      <nav aria-label="Documentation">
+        @for (section of sections; track section.title) {
+          <div class="mb-6">
+            <p
+              class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500"
+            >
+              {{ section.title }}
+            </p>
+            <ul class="m-0 list-none space-y-0.5 p-0">
+              @for (item of section.items; track item.path) {
+                <li>
+                  <a
+                    [routerLink]="item.path"
+                    routerLinkActive="bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                    class="focus-ring block rounded-md px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  >
+                    {{ item.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </nav>
+    </aside>
+
+    <main id="main-content" class="min-w-0 flex-1">
+      <router-outlet />
+    </main>
+  </div>
 </div>
