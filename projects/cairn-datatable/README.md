@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/gunerkaanalkim/cairn/main/assets/logo/cairn-wordmark-auto.svg" alt="Cairn" width="150" />
+
 # Cairn DataTable
 
 A signal-based, zoneless datatable for Angular 21+ with zero runtime dependencies.
