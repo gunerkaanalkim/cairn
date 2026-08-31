@@ -2,9 +2,11 @@
 
 Cairn is a collection of modern, signal-based Angular components and utilities. It focuses on zero-dependency, headless-capable designs that seamlessly integrate with the latest Angular features.
 
-## Live Demo
+## Documentation and live demo
 
-A live demo of the packages is available at: [https://gunerkaanalkim.github.io/cairn/](https://gunerkaanalkim.github.io/cairn/)
+The documentation site carries a live, editable example for every feature next to the code that produces it: [https://gunerkaanalkim.github.io/cairn/](https://gunerkaanalkim.github.io/cairn/)
+
+The same pages are available as Markdown in [`docs/`](./docs), starting from [the documentation index](./docs/README.md).
 
 ## Packages
 
@@ -40,7 +42,8 @@ A live demo of the packages is available at: [https://gunerkaanalkim.github.io/c
 ## Repository Structure
 
 - `projects/cairn-datatable`: The source code for the `@gunerkaanalkim/cairn-datatable` library.
-- `projects/cairn-demo`: An Angular application demonstrating how to use the library.
+- `projects/cairn-demo`: The documentation site, one route per feature, each with a live example.
+- `docs`: The same documentation in Markdown.
 
 ## Contributing and License
 

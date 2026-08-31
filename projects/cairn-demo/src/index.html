@@ -2,12 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>CairnDemo</title>
+    <title>Cairn DataTable — Documentation & Live Demo</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Documentation and live examples for Cairn DataTable, a signal-based zoneless datatable for Angular with zero runtime dependencies."
+    />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      // Restores the deep link that public/404.html encoded into the query string.
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (part) {
+              return part.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(null, '', l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
+    <script>
+      // Applies the persisted theme before first paint so the page never flashes.
+      (function () {
+        try {
+          var stored = localStorage.getItem('cairn-docs-theme');
+          var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (error) {
+          /* storage can be blocked, the default light theme is fine */
+        }
+      })();
+    </script>
   </head>
-  <body>
+  <body class="bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
     <app-root></app-root>
   </body>
 </html>
