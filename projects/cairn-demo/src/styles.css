@@ -1,2 +1,97 @@
 @import 'tailwindcss';
 @import '@gunerkaanalkim/cairn-datatable/styles/cairn-datatable.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The library ships a prefers-color-scheme based dark theme. The docs site
+   drives dark mode from a class on <html>, so the tokens are re-mapped here. */
+html.dark .cairn-table {
+  --cairn-border: #27272a;
+  --cairn-header-bg: #18181b;
+  --cairn-row-hover: #27272a;
+  --cairn-text: #fafafa;
+  --cairn-bg: #09090b;
+}
+
+html:not(.dark) .cairn-table {
+  --cairn-border: #e4e4e7;
+  --cairn-header-bg: #fafafa;
+  --cairn-row-hover: #f4f4f5;
+  --cairn-text: #18181b;
+  --cairn-bg: #ffffff;
+}
+
+/* Syntax highlighting tokens produced by app/core/highlight.ts */
+.tok-com { color: #94a3b8; font-style: italic; }
+.tok-str { color: #16a34a; }
+.tok-key { color: #7c3aed; }
+.tok-num { color: #ea580c; }
+.tok-fn  { color: #2563eb; }
+.tok-tag { color: #e11d48; }
+.tok-att { color: #d97706; }
+
+html.dark .tok-com { color: #64748b; }
+html.dark .tok-str { color: #4ade80; }
+html.dark .tok-key { color: #c084fc; }
+html.dark .tok-num { color: #fb923c; }
+html.dark .tok-fn  { color: #60a5fa; }
+html.dark .tok-tag { color: #fb7185; }
+html.dark .tok-att { color: #fbbf24; }
+
+/* Focus ring shared by every interactive element in the docs shell. */
+.focus-ring:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Demo only: the "plain CSS" styling preset used by the Styling page.
+   It targets the data-* attributes the component publishes, so it needs no
+   class names passed through the classNames input at all.
+   --------------------------------------------------------------------------- */
+.demo-editorial .cairn-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+}
+
+.demo-editorial .cairn-header-cell {
+  background: transparent;
+  border-bottom: 2px solid currentColor;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-editorial .cairn-cell {
+  border-bottom: 1px dotted var(--cairn-border);
+  padding-block: 0.9rem;
+}
+
+.demo-editorial [data-align='end'] {
+  font-variant-numeric: tabular-nums;
+}
+
+.demo-editorial [data-sorted='ascending'],
+.demo-editorial [data-sorted='descending'] {
+  color: #4f46e5;
+}
+
+.demo-editorial tr[data-selected='true'] {
+  background: color-mix(in srgb, #4f46e5 10%, transparent);
+}
