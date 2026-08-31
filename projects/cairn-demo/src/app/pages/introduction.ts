@@ -39,6 +39,7 @@ export class People {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
+      [showLogo]="true"
       eyebrow="Cairn DataTable"
       heading="A datatable that gets out of your way"
       lead="Signal based, zoneless and free of runtime dependencies. The logic layer is a plain factory function, the component layer is optional, and every element it renders is yours to style."

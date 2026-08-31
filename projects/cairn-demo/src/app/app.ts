@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NAV_SECTIONS } from './core/nav';
+import { CairnLogo } from './ui/logo';
 import { ThemeService } from './core/theme';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CairnLogo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
