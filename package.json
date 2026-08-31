@@ -1,6 +1,9 @@
 {
   "name": "cairn-workspace",
   "version": "0.0.0",
+  "workspaces": [
+    "projects/*"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +12,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:lib": "ng build cairn-datatable && ng test cairn-datatable --watch=false",
-    "verify": "ng build cairn-datatable && ng test cairn-datatable --watch=false && ng build cairn-demo"
+    "verify": "npm run build:lib && npm i --no-save file:dist/cairn-datatable && ng test cairn-datatable --watch=false && ng build cairn-demo"
   },
   "private": true,
   "packageManager": "npm@11.12.1",

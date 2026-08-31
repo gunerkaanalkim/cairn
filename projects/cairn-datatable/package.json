@@ -1,6 +1,6 @@
 {
   "name": "@gunerkaanalkim/cairn-datatable",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Signal-based, zoneless datatable for Angular 21+ with zero runtime dependencies",
   "keywords": ["angular", "datatable", "table", "data-grid", "signals", "zoneless", "headless"],
   "license": "MIT",
