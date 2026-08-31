@@ -1,11 +1,16 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { CairnLogo } from './logo';
 
 @Component({
   selector: 'docs-page',
+  imports: [CairnLogo],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <article class="mx-auto max-w-4xl px-6 py-10 lg:px-10">
       <header class="mb-8">
+        @if (showLogo()) {
+          <cairn-logo class="mb-5 h-10 w-10 text-zinc-900 dark:text-zinc-50" />
+        }
         @if (eyebrow()) {
           <p class="m-0 text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
             {{ eyebrow() }}
@@ -26,4 +31,5 @@ export class DocsPage {
   readonly heading = input.required<string>();
   readonly lead = input<string>('');
   readonly eyebrow = input<string>('');
+  readonly showLogo = input<boolean>(false);
 }

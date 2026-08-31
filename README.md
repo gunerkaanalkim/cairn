@@ -1,4 +1,4 @@
-# Cairn
+<img src="assets/logo/cairn-wordmark-auto.svg" alt="Cairn" width="150" />
 
 Cairn is a collection of modern, signal-based Angular components and utilities. It focuses on zero-dependency, headless-capable designs that seamlessly integrate with the latest Angular features.
 
